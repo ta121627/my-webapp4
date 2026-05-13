@@ -1,1 +1,2374 @@
-# my-webapp4
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>材料準備表</title>
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" type="image/png" href="icon.png">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  font-family: -apple-system, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', sans-serif;
+  background: #F2F2F7;
+  -webkit-font-smoothing: antialiased;
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  width: 100%;
+}
+
+/* ─── SCREENS ─── */
+#screen-home, #screen-calendar, #screen-files {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  bottom: calc(83px + env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: #F2F2F7;
+  will-change: transform;
+  transition: transform 0.34s cubic-bezier(0.32,0.72,0,1);
+  z-index: 1;
+}
+#screen-home  { transform: translateX(0); }
+#screen-calendar { transform: translateX(100%); }
+#screen-files { transform: translateX(100%); }
+
+/* Edit screen overlay */
+#screen-edit {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: #F2F2F7;
+  z-index: 30;
+  transform: translateX(100%);
+  transition: transform 0.34s cubic-bezier(0.32,0.72,0,1);
+}
+#screen-edit.open { transform: translateX(0); }
+
+/* ─── TAB BAR ─── */
+#tab-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: calc(49px + env(safe-area-inset-bottom, 0px));
+  background: rgba(249,249,249,0.94);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-top: 0.5px solid rgba(0,0,0,0.2);
+  display: flex; align-items: flex-start; justify-content: space-around;
+  padding-top: 10px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  z-index: 100;
+  user-select: none;
+  transition: transform 0.34s cubic-bezier(0.32,0.72,0,1);
+}
+#tab-bar.hidden { transform: translateY(100%); }
+.tab-item {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  flex: 1; cursor: pointer; padding: 0 4px;
+  -webkit-tap-highlight-color: transparent;
+}
+.tab-item:active { opacity: 0.6; }
+.tab-icon { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 22px; line-height: 1; }
+.tab-label { font-size: 10px; font-weight: 500; color: #8E8E93; letter-spacing: -0.2px; }
+.tab-item.active .tab-label { color: #007AFF; }
+.tab-item .tab-icon svg { fill: #8E8E93; transition: fill 0.15s; }
+.tab-item.active .tab-icon svg { fill: #007AFF; }
+
+/* ─── HOME SCREEN ─── */
+#screen-home {
+  padding-bottom: calc(49px + env(safe-area-inset-bottom, 0px) + 72px);
+}
+#screen-calendar {
+  padding-bottom: 16px;
+}
+
+.home-header {
+  background: rgba(249,249,249,0.94);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-bottom: 0.5px solid rgba(0,0,0,0.15);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 14px; min-height: 52px;
+  position: sticky; top: 0; z-index: 10;
+}
+.header-left { width: 60px; }
+.header-center { flex: 1; text-align: center; }
+#app-title { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; color: #000; display: block; }
+#user-display { font-size: 11px; color: #8E8E93; font-weight: 400; margin-top: 1px; display: block; }
+
+.lang-menu-wrap { position: relative; width: 60px; text-align: right; }
+#lang-btn { background: none; border: none; color: #007AFF; font-size: 22px; cursor: pointer; padding: 8px 4px; -webkit-tap-highlight-color: transparent; }
+#lang-dropdown {
+  display: none; position: absolute; right: 0; top: calc(100% + 8px);
+  background: rgba(255,255,255,0.98); border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 0 0 0.5px rgba(0,0,0,0.1);
+  min-width: 200px; z-index: 200; overflow: hidden;
+}
+#lang-dropdown.open { display: block; }
+.menu-section-label { font-size: 11px; color: #8E8E93; font-weight: 500; padding: 10px 16px 6px; letter-spacing: 0.3px; text-transform: uppercase; }
+.lang-opt { display: block; width: 100%; padding: 12px 16px; border: none; background: none; text-align: left; cursor: pointer; font-size: 15px; color: #000; border-top: 0.5px solid #E5E5EA; -webkit-tap-highlight-color: transparent; font-family: inherit; }
+.lang-opt:active { background: #F2F2F7; }
+.lang-opt.active { color: #007AFF; font-weight: 600; }
+.menu-divider { border: none; border-top: 0.5px solid #D1D1D6; margin: 2px 0; }
+.menu-action { display: block; width: 100%; padding: 12px 16px; border: none; background: none; text-align: left; cursor: pointer; font-size: 15px; color: #000; border-top: 0.5px solid #E5E5EA; font-family: inherit; -webkit-tap-highlight-color: transparent; }
+.menu-action:active { background: #F2F2F7; }
+
+.home-list { padding: 20px 16px 0; }
+.home-empty { text-align: center; color: #AEAEB2; font-size: 15px; padding: 80px 0; }
+.card { background: #FFF; display: flex; align-items: stretch; border-radius: 0; overflow: hidden; }
+.card + .card { border-top: 0.5px solid #E5E5EA; }
+.card-main { flex: 1; padding: 12px 16px; cursor: pointer; display: flex; align-items: center; gap: 12px; -webkit-tap-highlight-color: transparent; min-width: 0; }
+.card-main:active { background: #F2F2F7; }
+.card-icon { width: 36px; height: 36px; border-radius: 8px; background: linear-gradient(135deg, #007AFF 0%, #0055CC 100%); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.card-text { flex: 1; min-width: 0; }
+.card-name { font-size: 15px; font-weight: 500; color: #000; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-meta { font-size: 12px; color: #8E8E93; }
+.card-shared-by { font-size: 11px; color: #007AFF; background: rgba(0,122,255,0.08); border-radius: 4px; padding: 1px 5px; display: inline-block; margin-top: 2px; }
+.card-chevron { color: #C7C7CC; font-size: 14px; padding-right: 4px; flex-shrink: 0; }
+.card-actions { display: flex; flex-shrink: 0; }
+.card-share { background: none; border: none; border-left: 0.5px solid #E5E5EA; color: #007AFF; font-size: 18px; padding: 0 14px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.card-del { background: none; border: none; border-left: 0.5px solid #E5E5EA; color: #FF3B30; font-size: 16px; padding: 0 14px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+
+.home-fab {
+  position: fixed;
+  bottom: calc(49px + env(safe-area-inset-bottom, 0px) + 4px);
+  left: 16px;
+  right: 16px;
+  display: block;
+  padding: 15px; background: #007AFF; color: #fff;
+  border: none; border-radius: 14px;
+  font-size: 16px; font-weight: 600; cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0,122,255,0.4);
+  font-family: inherit; -webkit-tap-highlight-color: transparent;
+  z-index: 5;
+}
+.home-fab:active { background: #0060CC; }
+
+/* ─── EDIT SCREEN ─── */
+.edit-topbar {
+  background: rgba(249,249,249,0.94);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-bottom: 0.5px solid rgba(0,0,0,0.15);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 16px; height: 50px;
+  position: sticky; top: 0; z-index: 10;
+}
+.back-btn { background: none; border: none; color: #007AFF; font-size: 15px; cursor: pointer; padding: 8px 0; font-family: inherit; -webkit-tap-highlight-color: transparent; }
+.edit-title { font-size: 15px; font-weight: 600; color: #000; }
+.sheet { background: #fff; padding: 14px; }
+.site-label { font-size: 10px; color: #888; }
+#siteInput { width: 100%; font-size: 20px; font-weight: bold; border: none; border-bottom: 2px solid #333; outline: none; margin-bottom: 12px; padding: 2px 4px; font-family: inherit; }
+#siteInput::placeholder { color: #ccc; }
+.columns { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; }
+.col-wrap { display: flex; flex-direction: column; }
+
+table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
+th, td { border: 1px solid #ccc; padding: 2px 4px; font-size: 11px; }
+th { background: #eee; text-align: center; font-size: 12px; }
+input.custom-title { width: 100%; font-size: 12px; font-weight: bold; border: none; background: transparent; outline: none; text-align: center; padding: 0; font-family: inherit; }
+input.custom-title::placeholder { color: #aaa; font-weight: normal; }
+.name-td { width: auto; }
+.qty-td { text-align: right; white-space: nowrap; width: 1%; padding-right: 4px; }
+.qty-td input.qty { width: 34px; font-size: 13px; font-weight: bold; text-align: center; border: 1px solid #ccc; padding: 1px 2px; vertical-align: middle; font-family: inherit; }
+.qty-td .unit { font-size: 10px; color: #555; margin-left: 2px; vertical-align: middle; }
+.del-td { width: 18px; text-align: center; padding: 0 2px; border-left: none; }
+.del { background: none; border: none; color: #bbb; font-size: 11px; cursor: pointer; padding: 0; }
+.del:active { color: #FF3B30; }
+input.ni { width: 100%; font-size: 11px; border: 1px solid #ccc; padding: 1px 3px; font-family: inherit; }
+input.shaku { width: 28px; font-size: 12px; border: 1px solid #ccc; padding: 1px 2px; text-align: center; vertical-align: middle; font-family: inherit; }
+.add-btn { width: 100%; padding: 3px; font-size: 11px; cursor: pointer; background: #f9f9f9; border: 1px dashed #aaa; margin-bottom: 8px; color: #666; font-family: inherit; }
+.add-title-btn { width: 100%; padding: 5px; font-size: 11px; cursor: pointer; background: #f0f4ff; border: 1px dashed #88a; margin-top: 4px; color: #446; border-radius: 3px; margin-bottom: 4px; font-family: inherit; }
+.section-del-btn { display: block; width: 100%; padding: 2px; font-size: 10px; cursor: pointer; background: none; border: none; color: #ccc; text-align: right; margin-bottom: 2px; font-family: inherit; }
+.section-del-btn:active { color: #FF3B30; }
+
+/* ─── FILE ATTACHMENTS ─── */
+.files-section {
+  background: #fff;
+  border-top: 0.5px solid #E5E5EA;
+  padding: 14px 14px 6px;
+}
+.files-section-title {
+  font-size: 13px; font-weight: 600; color: #8E8E93;
+  letter-spacing: 0.3px; text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.files-drop-zone {
+  border: 2px dashed #C7C7CC; border-radius: 14px;
+  padding: 20px 16px; text-align: center;
+  cursor: pointer; margin-bottom: 10px;
+  transition: border-color 0.15s, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.files-drop-zone:active, .files-drop-zone.drag-over {
+  border-color: #007AFF; background: rgba(0,122,255,0.04);
+}
+.files-drop-icon { font-size: 28px; margin-bottom: 6px; }
+.files-drop-text { font-size: 14px; font-weight: 500; color: #007AFF; }
+.files-drop-sub { font-size: 11px; color: #AEAEB2; margin-top: 3px; }
+#file-input { display: none; }
+
+.files-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.file-thumb {
+  position: relative; border-radius: 10px; overflow: hidden;
+  background: #F2F2F7; aspect-ratio: 1;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.file-thumb img {
+  width: 100%; height: 100%; object-fit: cover;
+}
+.file-thumb-pdf {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 100%; height: 100%; gap: 4px;
+}
+.file-thumb-pdf-icon { font-size: 26px; }
+.file-thumb-pdf-name {
+  font-size: 9px; color: #555; text-align: center;
+  padding: 0 4px; overflow: hidden;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  word-break: break-all;
+}
+.file-thumb-del {
+  position: absolute; top: 4px; right: 4px;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: rgba(0,0,0,0.55); border: none;
+  color: #fff; font-size: 11px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  -webkit-tap-highlight-color: transparent; line-height: 1;
+}
+
+/* ─── FILE VIEWER SCREEN ─── */
+#screen-fileview {
+  position: fixed; inset: 0;
+  background: #000; z-index: 50;
+  display: flex; flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 0.32s cubic-bezier(0.32,0.72,0,1);
+}
+#screen-fileview.open { transform: translateY(0); }
+.fv-topbar {
+  position: absolute; top: 0; left: 0; right: 0;
+  height: calc(50px + env(safe-area-inset-top, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  display: flex; align-items: center; justify-content: space-between;
+  padding-left: 16px; padding-right: 16px;
+  z-index: 2;
+}
+.fv-close {
+  background: none; border: none; color: #fff;
+  font-size: 15px; font-weight: 500; cursor: pointer;
+  font-family: inherit; -webkit-tap-highlight-color: transparent;
+  padding: 8px 0;
+}
+.fv-title {
+  font-size: 14px; font-weight: 600; color: #fff;
+  flex: 1; text-align: center; padding: 0 8px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.fv-body {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  padding-top: calc(50px + env(safe-area-inset-top, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  overflow: hidden;
+}
+#fv-image {
+  max-width: 100%; max-height: 100%;
+  object-fit: contain; display: none;
+}
+#fv-pdf-wrap {
+  width: 100%; height: 100%; display: none;
+}
+#fv-pdf-wrap iframe {
+  width: 100%; height: 100%; border: none;
+}
+#fv-pdf-fallback {
+  display: none; flex-direction: column; align-items: center; justify-content: center;
+  color: #fff; gap: 16px; padding: 24px; text-align: center;
+}
+#fv-pdf-fallback .fv-pdf-icon { font-size: 56px; }
+#fv-pdf-fallback .fv-pdf-name { font-size: 15px; font-weight: 500; }
+#fv-pdf-fallback .fv-pdf-note { font-size: 12px; color: rgba(255,255,255,0.6); }
+
+.actions { padding: 10px 14px; padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)); display: flex; gap: 6px; flex-wrap: wrap; }
+.actions button { padding: 9px 14px; font-size: 13px; cursor: pointer; border: none; border-radius: 10px; font-family: inherit; font-weight: 500; background: #E5E5EA; color: #000; -webkit-tap-highlight-color: transparent; }
+.btn-confirm { background: #007AFF !important; color: #fff !important; }
+#btn-edit { display: none; }
+body.confirmed .del { display: none !important; }
+body.confirmed .add-btn { display: none !important; }
+body.confirmed .add-title-btn { display: none !important; }
+body.confirmed .section-del-btn { display: none !important; }
+body.confirmed #btn-confirm { display: none; }
+body.confirmed #btn-edit { display: inline-block; }
+body.confirmed input.qty { border: none; border-bottom: 1px solid #bbb; background: transparent; font-weight: bold; }
+body.confirmed input.ni, body.confirmed input.shaku { border: none; border-bottom: 1px solid #bbb; background: transparent; }
+body.confirmed input.custom-title { border-bottom: none; }
+
+/* ─── CALENDAR SCREEN ─── */
+.cal-header {
+  background: rgba(249,249,249,0.94);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-bottom: 0.5px solid rgba(0,0,0,0.15);
+  padding: 12px 16px 10px;
+  position: sticky; top: 0; z-index: 10;
+}
+.cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.cal-nav-title { font-size: 20px; font-weight: 700; color: #000; letter-spacing: -0.5px; }
+.cal-nav-title span { color: #007AFF; }
+.cal-nav-right { display: flex; align-items: center; gap: 8px; }
+.cal-site-btn {
+  background: #007AFF; border: none; border-radius: 20px;
+  color: #fff; font-size: 12px; font-weight: 600;
+  padding: 5px 12px; cursor: pointer; font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+.cal-site-btn:active { background: #0060CC; }
+.cal-today-btn { background: none; border: none; color: #007AFF; font-size: 15px; font-weight: 500; cursor: pointer; font-family: inherit; padding: 4px 8px; border-radius: 8px; -webkit-tap-highlight-color: transparent; }
+.cal-today-btn:active { background: rgba(0,122,255,0.1); }
+.cal-nav-btns { display: flex; gap: 4px; }
+.cal-nav-btn {
+  background: #E5E5EA; border: none; border-radius: 50%;
+  width: 30px; height: 30px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: #007AFF; font-size: 16px; font-weight: 600;
+  -webkit-tap-highlight-color: transparent;
+}
+.cal-nav-btn:active { background: #D1D1D6; }
+.cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; }
+.cal-wd { font-size: 11px; font-weight: 600; color: #8E8E93; padding: 3px 0; }
+.cal-wd:first-child { color: #FF3B30; }
+.cal-wd:last-child { color: #007AFF; }
+
+.cal-body { padding: 0 8px 16px; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.07); margin-top: 8px; }
+.cal-cell {
+  display: flex; flex-direction: column; align-items: stretch;
+  min-height: 72px; padding: 3px 1px 2px;
+  cursor: pointer; position: relative;
+  border-bottom: 0.5px solid #E5E5EA;
+  border-right: 0.5px solid #E5E5EA;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+/* Borders are applied/removed in JS to avoid nth-child breakage from span-bar siblings */
+.cal-cell:active { background: #F2F2F7; }
+.cal-day-num {
+  font-size: 13px; font-weight: 400; color: #000;
+  width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; line-height: 1; align-self: center; flex-shrink: 0; margin-bottom: 2px;
+}
+.cal-cell.other-month .cal-day-num { color: #C7C7CC; }
+.cal-cell.sun .cal-day-num { color: #FF3B30; }
+.cal-cell.sat .cal-day-num { color: #007AFF; }
+.cal-cell.other-month.sun .cal-day-num { color: rgba(255,59,48,0.3); }
+.cal-cell.other-month.sat .cal-day-num { color: rgba(0,122,255,0.3); }
+.cal-cell.today .cal-day-num { background: #007AFF; color: #fff !important; font-weight: 700; }
+.cal-cell.selected:not(.today) .cal-day-num { background: rgba(0,122,255,0.15); color: #007AFF !important; font-weight: 600; }
+
+.cal-ev-bar {
+  font-size: 9px; color: #fff; font-weight: 600;
+  border-radius: 3px; padding: 1px 3px;
+  margin: 0 1px 1px; white-space: nowrap; overflow: hidden;
+  line-height: 1.5; flex-shrink: 0;
+  text-overflow: clip;
+}
+/* Multi-day span bar variants */
+.cal-ev-bar.span-start  { margin-left: 2px; margin-right: 0; border-radius: 4px 0 0 4px; }
+.cal-ev-bar.span-mid    { margin-left: 0; margin-right: 0; border-radius: 0; }
+.cal-ev-bar.span-end    { margin-left: 0; margin-right: 2px; border-radius: 0 4px 4px 0; }
+.cal-ev-bar.span-single { margin: 0 2px 1px; border-radius: 4px; }
+.cal-ev-more { font-size: 8px; color: #8E8E93; text-align: center; padding: 0 1px; flex-shrink: 0; }
+
+/* Multi-day overlay bar — placed as a direct grid child spanning multiple columns */
+.cal-span-bar {
+  align-self: start;
+  z-index: 3;
+  pointer-events: none;
+  height: 13px;
+  line-height: 13px;
+  font-size: 9px;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  padding: 0 3px;
+}
+
+/* DateTime rows in event modal */
+.event-dt-row { display: flex; gap: 8px; margin: 0 20px 4px; }
+.event-dt-row .modal-input { margin: 0; flex: 1; min-width: 0; }
+.event-dt-row .modal-input.time-field { flex: 0 0 105px; }
+
+.cal-events-panel { margin-top: 16px; padding: 0 8px; }
+.cal-events-date { font-size: 17px; font-weight: 600; color: #000; padding: 0 4px 10px; letter-spacing: -0.3px; }
+.cal-event-list { background: #fff; border-radius: 12px; overflow: hidden; }
+.cal-no-events { padding: 20px 16px; text-align: center; color: #AEAEB2; font-size: 14px; }
+.cal-event-row { display: flex; align-items: center; padding: 12px 16px; border-bottom: 0.5px solid #E5E5EA; gap: 12px; -webkit-tap-highlight-color: transparent; }
+.cal-event-row:last-child { border-bottom: none; }
+.cal-event-row:active { background: #F2F2F7; }
+.cal-event-color { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+.cal-event-info { flex: 1; min-width: 0; }
+.cal-event-title { font-size: 15px; font-weight: 500; color: #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cal-event-sub { font-size: 12px; color: #8E8E93; margin-top: 2px; }
+.cal-event-del { background: none; border: none; color: #C7C7CC; font-size: 20px; padding: 0 2px; cursor: pointer; line-height: 1; -webkit-tap-highlight-color: transparent; }
+.cal-event-del:active { color: #FF3B30; }
+
+.cal-add-btn {
+  display: flex; align-items: center; gap: 8px;
+  background: #fff; border-radius: 12px; padding: 13px 16px; margin-top: 8px; cursor: pointer;
+  border: none; width: 100%; text-align: left; font-family: inherit;
+  color: #007AFF; font-size: 15px; font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06); -webkit-tap-highlight-color: transparent;
+}
+.cal-add-btn:active { background: #F2F2F7; }
+
+.cal-site-legend { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 4px 0; }
+.cal-site-chip {
+  display: flex; align-items: center; gap: 5px;
+  background: #fff; border-radius: 20px; padding: 4px 10px;
+  font-size: 12px; font-weight: 500; color: #000;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+.cal-site-chip-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+/* ─── MODALS ─── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45); z-index: 500;
+  align-items: flex-end; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: #fff; border-radius: 20px 20px 0 0;
+  padding: 8px 0 0; width: 100%;
+  box-shadow: 0 -4px 32px rgba(0,0,0,0.2);
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
+  animation: slideUp 0.28s cubic-bezier(0.32,0.72,0,1);
+  max-height: 90vh; overflow-y: auto;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-handle { width: 36px; height: 4px; background: #D1D1D6; border-radius: 2px; margin: 0 auto 16px; flex-shrink: 0; }
+.modal-title { font-size: 17px; font-weight: 600; color: #000; text-align: center; padding: 0 20px 14px; border-bottom: 0.5px solid #E5E5EA; }
+.modal-desc { font-size: 13px; color: #8E8E93; padding: 12px 20px 4px; line-height: 1.5; }
+.modal-input { display: block; width: calc(100% - 40px); margin: 12px 20px; font-size: 16px; padding: 12px 14px; border: none; border-radius: 12px; background: #F2F2F7; outline: none; font-family: inherit; color: #000; }
+.modal-input:focus { background: #E5E5EA; }
+.modal-textarea { display: block; width: calc(100% - 40px); margin: 0 20px 12px; font-size: 13px; padding: 12px 14px; border: none; border-radius: 12px; background: #F2F2F7; outline: none; height: 100px; resize: none; font-family: monospace; word-break: break-all; color: #333; }
+.modal-toast { font-size: 13px; color: #34C759; margin: -4px 0 8px; text-align: center; min-height: 18px; }
+.modal-actions { display: flex; border-top: 0.5px solid #E5E5EA; margin-top: 4px; flex-shrink: 0; }
+.modal-actions button { flex: 1; padding: 14px; background: none; border: none; font-size: 17px; cursor: pointer; font-family: inherit; -webkit-tap-highlight-color: transparent; }
+.modal-actions button:active { background: #F2F2F7; }
+.modal-actions button + button { border-left: 0.5px solid #E5E5EA; }
+.modal-btn-cancel { color: #8E8E93; }
+.modal-btn-primary { color: #007AFF; font-weight: 600; }
+.modal-btn-danger { color: #FF3B30; font-weight: 500; }
+
+.modal-section-label { font-size: 13px; color: #8E8E93; padding: 12px 20px 6px; font-weight: 500; }
+.modal-site-list { display: flex; flex-direction: column; gap: 0; margin: 0 20px 4px; border-radius: 12px; overflow: hidden; background: #F2F2F7; }
+.modal-site-item {
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+  cursor: pointer; border-bottom: 0.5px solid #E5E5EA;
+  -webkit-tap-highlight-color: transparent; background: #fff;
+  transition: background 0.1s;
+}
+.modal-site-item:last-child { border-bottom: none; }
+.modal-site-item:active { background: #F2F2F7; }
+.modal-site-item.selected { background: rgba(0,122,255,0.05); }
+.modal-site-dot { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; }
+.modal-site-name { font-size: 15px; color: #000; font-weight: 400; flex: 1; }
+.modal-site-check { color: #007AFF; font-size: 17px; font-weight: 700; }
+.modal-no-sites { font-size: 13px; color: #AEAEB2; padding: 14px 16px; text-align: center; background: #fff; border-radius: 12px; margin: 0 20px 8px; }
+.modal-inline-btn { display: block; width: calc(100% - 40px); margin: 0 20px 12px; padding: 11px; background: #F2F2F7; border: none; border-radius: 12px; color: #007AFF; font-size: 14px; font-weight: 500; cursor: pointer; font-family: inherit; text-align: center; -webkit-tap-highlight-color: transparent; }
+.modal-inline-btn:active { background: #E5E5EA; }
+
+.modal-link-list { display: flex; flex-direction: column; gap: 0; margin: 0 20px 4px; border-radius: 12px; overflow: hidden; }
+.modal-link-item { display: flex; align-items: center; gap: 10px; padding: 11px 14px; background: #fff; border-bottom: 0.5px solid #E5E5EA; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.modal-link-item:last-child { border-bottom: none; }
+.modal-link-item:active { background: #F2F2F7; }
+.modal-link-item.selected { background: rgba(0,122,255,0.05); }
+.modal-link-item-icon { font-size: 16px; }
+.modal-link-item-name { font-size: 13px; color: #000; font-weight: 400; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.modal-link-check { color: #007AFF; font-size: 16px; font-weight: 700; }
+
+.sites-list { margin: 0 20px 8px; border-radius: 12px; overflow: hidden; background: #fff; }
+.site-row { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border-bottom: 0.5px solid #E5E5EA; -webkit-tap-highlight-color: transparent; }
+.site-row:last-child { border-bottom: none; }
+.site-row-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+.site-row-name { font-size: 15px; color: #000; flex: 1; }
+.site-row-del { background: none; border: none; color: #C7C7CC; font-size: 18px; cursor: pointer; padding: 0 2px; -webkit-tap-highlight-color: transparent; }
+.site-row-del:active { color: #FF3B30; }
+.sites-empty { font-size: 14px; color: #AEAEB2; text-align: center; padding: 24px 16px; }
+
+/* ─── FILES TAB ADD MENU ─── */
+.files-add-menu-wrap { position: relative; width: 60px; text-align: right; }
+#files-add-dropdown {
+  display: none; position: absolute; right: 0; top: calc(100% + 4px);
+  background: rgba(255,255,255,0.98); border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 0 0 0.5px rgba(0,0,0,0.1);
+  min-width: 160px; z-index: 200; overflow: hidden;
+}
+#files-add-dropdown.open { display: block; }
+.files-add-opt {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 13px 16px; border: none; background: none;
+  text-align: left; cursor: pointer; font-size: 15px; color: #000;
+  font-family: inherit; -webkit-tap-highlight-color: transparent;
+}
+.files-add-opt + .files-add-opt { border-top: 0.5px solid #E5E5EA; }
+.files-add-opt:active { background: #F2F2F7; }
+.files-add-opt-icon { font-size: 20px; line-height: 1; }
+
+/* Files tab back button */
+#files-back-btn {
+  display: none; background: none; border: none;
+  color: #007AFF; font-size: 15px; cursor: pointer;
+  padding: 8px 0; font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+}
+
+/* Folder thumb in grid */
+.folder-thumb {
+  position: relative; border-radius: 10px; overflow: hidden;
+  background: #fff; aspect-ratio: 1;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 4px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+}
+.folder-thumb:active { background: #F2F2F7; }
+.folder-thumb-icon { font-size: 36px; line-height: 1; }
+.folder-thumb-name {
+  font-size: 10px; color: #333; text-align: center;
+  padding: 0 6px; overflow: hidden;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  word-break: break-all; font-weight: 500;
+}
+.folder-thumb-del {
+  position: absolute; top: 4px; right: 4px;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: rgba(0,0,0,0.45); border: none;
+  color: #fff; font-size: 11px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  -webkit-tap-highlight-color: transparent; line-height: 1;
+}
+
+/* ─── FILES TAB VERTICAL LIST ─── */
+.files-tab-list { padding: 8px 0 100px; }
+.files-list-section { margin: 8px 16px 0; }
+.files-list-section-label {
+  font-size: 11px; font-weight: 600; color: #8E8E93;
+  text-transform: uppercase; letter-spacing: 0.4px;
+  padding: 0 4px 6px;
+}
+.files-list-group {
+  background: #fff; border-radius: 12px; overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+}
+.files-list-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px; border-bottom: 0.5px solid #E5E5EA;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: background 0.1s; user-select: none;
+}
+.files-list-item:last-child { border-bottom: none; }
+.files-list-item:active { background: #F2F2F7; }
+.files-list-item.drop-target { background: rgba(0,122,255,0.1) !important; }
+.files-item-thumb {
+  width: 52px; height: 52px; border-radius: 8px; overflow: hidden;
+  flex-shrink: 0; background: #F2F2F7;
+  display: flex; align-items: center; justify-content: center;
+}
+.files-item-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.files-item-thumb-icon { font-size: 32px; line-height: 1; }
+.files-item-info { flex: 1; min-width: 0; }
+.files-item-name {
+  font-size: 15px; font-weight: 500; color: #000;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.files-item-sub { font-size: 12px; color: #8E8E93; margin-top: 2px; }
+.files-item-chevron { color: #C7C7CC; font-size: 14px; flex-shrink: 0; }
+.files-item-more {
+  background: none; border: none; color: #C7C7CC;
+  font-size: 22px; padding: 8px 2px 8px 8px; cursor: pointer;
+  -webkit-tap-highlight-color: transparent; flex-shrink: 0; line-height: 1;
+}
+.files-item-more:active { color: #007AFF; }
+
+/* Drag ghost */
+.files-drag-ghost {
+  position: fixed; z-index: 9000; pointer-events: none;
+  left: 16px; right: 16px;
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px;
+  background: #fff; border-radius: 12px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.22);
+  opacity: 0.92;
+}
+.files-drag-ghost-icon { font-size: 28px; width: 44px; height: 44px; border-radius: 6px; background: #F2F2F7; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
+.files-drag-ghost-icon img { width: 100%; height: 100%; object-fit: cover; }
+.files-drag-ghost-name { font-size: 14px; font-weight: 500; color: #000; flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+/* File action sheet */
+.files-action-list { margin: 0 20px 8px; border-radius: 12px; overflow: hidden; }
+.files-action-btn {
+  display: flex; align-items: center; gap: 14px;
+  width: 100%; padding: 14px 16px; border: none; background: #fff;
+  text-align: left; cursor: pointer; font-size: 16px; color: #000;
+  font-family: inherit; -webkit-tap-highlight-color: transparent;
+  border-bottom: 0.5px solid #E5E5EA;
+}
+.files-action-btn:last-child { border-bottom: none; }
+.files-action-btn:active { background: #F2F2F7; }
+.files-action-btn.danger { color: #FF3B30; }
+.files-action-icon { font-size: 20px; width: 24px; text-align: center; flex-shrink: 0; }
+
+/* Folder picker */
+.folder-pick-list { margin: 0 20px 8px; border-radius: 12px; overflow: hidden; }
+.folder-pick-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 16px; border-bottom: 0.5px solid #E5E5EA;
+  cursor: pointer; font-size: 15px; color: #000; background: #fff;
+  -webkit-tap-highlight-color: transparent;
+}
+.folder-pick-item:last-child { border-bottom: none; }
+.folder-pick-item:active { background: #F2F2F7; }
+.folder-pick-icon { font-size: 22px; flex-shrink: 0; }
+
+/* ─── PRINT ─── */
+@media print {
+  @page { size: A4 portrait; margin: 5mm 6mm; }
+  html, body { height: 100%; margin: 0; padding: 0; background: #fff; overflow: visible; }
+  #screen-home, #screen-calendar, #tab-bar, .modal-overlay { display: none !important; }
+  #screen-edit {
+    display: block !important; position: static !important; transform: none !important;
+    max-width: 100%; width: 100%;
+  }
+  .files-section, #screen-fileview { display: none !important; }
+  .sheet { padding: 4px !important; }
+  .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 0 8px; }
+  .site-label { font-size: 10pt !important; }
+  #siteInput { font-size: 22pt !important; margin-bottom: 6px !important; }
+  th { font-size: 15pt !important; padding: 6px !important; }
+  td { font-size: 14pt !important; padding: 6px !important; }
+  .qty-td input.qty { font-size: 15pt !important; width: 52px !important; }
+  .qty-td .unit { font-size: 12pt !important; }
+  input.ni { font-size: 14pt !important; }
+  input.shaku { font-size: 14pt !important; width: 40px !important; }
+  input.custom-title { font-size: 15pt !important; }
+  table { margin-bottom: 6px !important; }
+  input { border: none !important; border-bottom: 0.5pt solid #999 !important; background: transparent !important; }
+}
+</style>
+
+</head>
+<body>
+
+<!-- ─── HOME SCREEN ─── -->
+
+<div id="screen-home">
+  <div class="home-header">
+    <div class="header-left"></div>
+    <div class="header-center">
+      <span id="app-title">材料準備表</span>
+      <span id="user-display"></span>
+    </div>
+    <div class="lang-menu-wrap">
+      <button id="lang-btn">☰</button>
+      <div id="lang-dropdown">
+        <div class="menu-section-label">言語 / Language</div>
+        <button class="lang-opt active" data-lang="ja">🇯🇵 日本語</button>
+        <button class="lang-opt" data-lang="en">🇺🇸 English</button>
+        <button class="lang-opt" data-lang="vi">🇻🇳 Tiếng Việt</button>
+        <hr class="menu-divider">
+        <button class="menu-action" id="menu-profile">👤 <span id="menu-profile-label">名前を設定</span></button>
+        <button class="menu-action" id="menu-import">📥 <span id="menu-import-label">共有コードを入力</span></button>
+      </div>
+    </div>
+  </div>
+  <div class="home-list" id="home-list"></div>
+  <p class="home-empty" id="home-empty"></p>
+  <button class="home-fab" id="btn-new">＋ 新規作成</button>
+</div>
+
+<!-- ─── CALENDAR SCREEN ─── -->
+
+<div id="screen-calendar">
+  <div class="cal-header">
+    <div class="cal-nav">
+      <div class="cal-nav-title" id="cal-month-label">2026年<span>5月</span></div>
+      <div class="cal-nav-right">
+        <button class="cal-site-btn" id="cal-site-mgr-btn">🏗 現場</button>
+        <button class="cal-today-btn" id="cal-today-btn">今日</button>
+        <div class="cal-nav-btns">
+          <button class="cal-nav-btn" id="cal-prev">‹</button>
+          <button class="cal-nav-btn" id="cal-next">›</button>
+        </div>
+      </div>
+    </div>
+    <div class="cal-weekdays">
+      <div class="cal-wd">日</div><div class="cal-wd">月</div>
+      <div class="cal-wd">火</div><div class="cal-wd">水</div>
+      <div class="cal-wd">木</div><div class="cal-wd">金</div>
+      <div class="cal-wd">土</div>
+    </div>
+  </div>
+  <div class="cal-body">
+    <div class="cal-grid" id="cal-grid"></div>
+    <div class="cal-events-panel">
+      <div class="cal-site-legend" id="cal-site-legend"></div>
+      <div class="cal-events-date" id="cal-events-date"></div>
+      <div class="cal-event-list" id="cal-event-list"></div>
+      <button class="cal-add-btn" id="cal-add-btn">
+        <span style="font-size:20px;font-weight:300;line-height:1">＋</span>
+        <span id="cal-add-label">予定を追加</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── FILES SCREEN ─── -->
+
+<div id="screen-files">
+  <div class="home-header">
+    <div class="header-left">
+      <button id="files-back-btn">‹ 戻る</button>
+    </div>
+    <div class="header-center">
+      <span id="files-screen-title" style="font-size:17px;font-weight:600;color:#000;">ファイル</span>
+    </div>
+    <div class="files-add-menu-wrap">
+      <button id="files-add-btn" style="background:none;border:none;color:#007AFF;font-size:26px;cursor:pointer;padding:8px 4px;line-height:1;-webkit-tap-highlight-color:transparent;">＋</button>
+      <div id="files-add-dropdown">
+        <button class="files-add-opt" id="files-opt-file">
+          <span class="files-add-opt-icon">📎</span>
+          <span>ファイルを追加</span>
+        </button>
+        <button class="files-add-opt" id="files-opt-folder">
+          <span class="files-add-opt-icon">📁</span>
+          <span>フォルダを作成</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <input type="file" id="files-tab-input" accept="image/*,application/pdf" multiple style="display:none">
+  <div id="files-tab-empty" style="text-align:center;color:#AEAEB2;font-size:15px;padding:80px 16px;display:none;">
+    <div style="font-size:48px;margin-bottom:12px;">📁</div>
+    ファイルがありません
+  </div>
+  <div id="files-tab-list" class="files-tab-list" style="display:none;"></div>
+</div>
+
+<!-- ─── EDIT SCREEN ─── -->
+
+<div id="screen-edit">
+  <div class="edit-topbar">
+    <button class="back-btn" id="btn-back">‹ 保存して戻る</button>
+    <span class="edit-title">材料準備表</span>
+    <span style="width:80px"></span>
+  </div>
+  <div class="sheet" id="sheet">
+    <div class="site-label">現場名</div>
+    <input id="siteInput" type="text" placeholder="現場名を入力">
+    <div class="columns">
+      <div class="col-wrap" id="col-left">
+        <table id="kokan-table"><thead><tr><th colspan="3">鋼管</th></tr></thead><tbody id="kokan-body"></tbody></table>
+        <button class="add-btn" id="add-kokan">＋ 鋼管を追加</button>
+        <table id="kin-table"><thead><tr><th colspan="3">金物</th></tr></thead><tbody id="kin-body"></tbody></table>
+        <button class="add-btn" id="add-kin">＋ 金物を追加</button>
+        <table id="bata-table"><thead><tr><th colspan="3">バタ</th></tr></thead><tbody id="bata-body"></tbody></table>
+        <button class="add-btn" id="add-bata">＋ バタを追加</button>
+        <button class="add-title-btn" id="add-title-left">＋ タイトルを追加</button>
+      </div>
+      <div class="col-wrap" id="col-right">
+        <table id="sup-table"><thead><tr><th colspan="3">サポート</th></tr></thead><tbody id="sup-body"></tbody></table>
+        <button class="add-btn" id="add-sup">＋ サポートを追加</button>
+        <table id="sangi-table"><thead><tr><th colspan="3">桟木</th></tr></thead><tbody id="sangi-body"></tbody></table>
+        <button class="add-btn" id="add-sangi">＋ 桟木を追加</button>
+        <table id="dogu-table"><thead><tr><th colspan="3">道具</th></tr></thead><tbody id="dogu-body"></tbody></table>
+        <button class="add-btn" id="add-dogu">＋ 道具を追加</button>
+        <button class="add-title-btn" id="add-title-right">＋ タイトルを追加</button>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn-confirm" id="btn-confirm">✔ 決定</button>
+    <button id="btn-edit">✎ 編集</button>
+    <button id="btn-reset">リセット</button>
+    <button id="btn-print">印刷 / PDF</button>
+  </div>
+</div>
+
+<!-- ─── FILE VIEWER ─── -->
+<div id="screen-fileview">
+  <div class="fv-topbar">
+    <button class="fv-close" id="fv-close">✕ 閉じる</button>
+    <div class="fv-title" id="fv-title"></div>
+    <div style="width:60px"></div>
+  </div>
+  <div class="fv-body">
+    <img id="fv-image" alt="">
+    <div id="fv-pdf-wrap"><iframe id="fv-iframe" title="PDF"></iframe></div>
+    <div id="fv-pdf-fallback">
+      <div class="fv-pdf-icon">📄</div>
+      <div class="fv-pdf-name" id="fv-pdf-name"></div>
+      <div class="fv-pdf-note">このPDFはブラウザで直接表示できません</div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── TAB BAR ─── -->
+
+<div id="tab-bar">
+  <div class="tab-item active" data-tab="home">
+    <div class="tab-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+    </div>
+    <div class="tab-label" id="tab-label-home">材料表</div>
+  </div>
+  <div class="tab-item" data-tab="calendar">
+    <div class="tab-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5C3.9 4 3 4.9 3 6v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zm0-13H5V6h14v1z"/></svg>
+    </div>
+    <div class="tab-label" id="tab-label-cal">カレンダー</div>
+  </div>
+  <div class="tab-item" data-tab="files">
+    <div class="tab-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V6h5.17l2 2H20v10z"/></svg>
+    </div>
+    <div class="tab-label" id="tab-label-files">ファイル</div>
+  </div>
+</div>
+
+<!-- ─── MODAL: profile ─── -->
+
+<div class="modal-overlay" id="modal-profile">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-profile-title">名前を設定</div>
+    <div class="modal-desc" id="modal-profile-desc">共有した材料表に名前が表示されます。</div>
+    <input class="modal-input" id="profile-name-input" type="text" placeholder="名前を入力" maxlength="20">
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="modal-profile-cancel">キャンセル</button>
+      <button class="modal-btn-primary" id="modal-profile-save">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL: share ─── -->
+
+<div class="modal-overlay" id="modal-share-show">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-share-title">共有コード</div>
+    <div class="modal-desc" id="modal-share-desc">このコードを相手に送ってください。</div>
+    <textarea class="modal-textarea" id="share-code-text" readonly></textarea>
+    <div class="modal-toast" id="share-toast"></div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="modal-share-close">閉じる</button>
+      <button class="modal-btn-primary" id="modal-share-copy">コピー</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL: import ─── -->
+
+<div class="modal-overlay" id="modal-import">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-import-title">共有コードを入力</div>
+    <div class="modal-desc" id="modal-import-desc">受け取ったコードを貼り付けてください。</div>
+    <textarea class="modal-textarea" id="import-code-text" placeholder="ここにコードを貼り付け"></textarea>
+    <div class="modal-toast" id="import-toast"></div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="modal-import-cancel">キャンセル</button>
+      <button class="modal-btn-primary" id="modal-import-ok">インポート</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL: calendar event ─── -->
+
+<div class="modal-overlay" id="modal-event">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-event-title">予定を追加</div>
+    <input class="modal-input" id="event-name-input" type="text" placeholder="タイトルを入力" maxlength="40">
+    <div class="modal-section-label">開始</div>
+    <div class="event-dt-row">
+      <input class="modal-input" id="event-start-date" type="date">
+      <input class="modal-input time-field" id="event-start-time" type="time">
+    </div>
+    <div class="modal-section-label">終了</div>
+    <div class="event-dt-row">
+      <input class="modal-input" id="event-end-date" type="date">
+      <input class="modal-input time-field" id="event-end-time" type="time">
+    </div>
+    <div class="modal-section-label">現場</div>
+    <div id="event-site-list"></div>
+    <button class="modal-inline-btn" id="event-add-site-inline">＋ 現場を新規登録</button>
+    <div class="modal-section-label" id="event-link-label">材料表を紐づける（任意）</div>
+    <div id="event-link-list"></div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="modal-event-cancel">キャンセル</button>
+      <button class="modal-btn-primary" id="modal-event-save">追加</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL: sites manager ─── -->
+
+<div class="modal-overlay" id="modal-sites">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">現場管理</div>
+    <div class="sites-list" id="sites-list"></div>
+    <button class="modal-inline-btn" id="btn-add-site">＋ 現場を追加</button>
+    <div class="modal-actions">
+      <button class="modal-btn-primary" id="modal-sites-close">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL: new site form ─── -->
+
+<div class="modal-overlay" id="modal-site-form">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-site-form-title">現場を追加</div>
+    <input class="modal-input" id="site-name-input" type="text" placeholder="現場名を入力" maxlength="20">
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="modal-site-form-cancel">キャンセル</button>
+      <button class="modal-btn-primary" id="modal-site-form-save">追加</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL: new folder ─── -->
+
+<div class="modal-overlay" id="modal-new-folder">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">フォルダを作成</div>
+    <input class="modal-input" id="folder-name-input" type="text" placeholder="フォルダ名を入力" maxlength="30">
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="modal-folder-cancel">キャンセル</button>
+      <button class="modal-btn-primary" id="modal-folder-save">作成</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL: file action sheet ─── -->
+
+<div class="modal-overlay" id="modal-file-actions">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-file-actions-title">オプション</div>
+    <div class="files-action-list">
+      <button class="files-action-btn" id="faction-rename">
+        <span class="files-action-icon">✏️</span>名前を変更
+      </button>
+      <button class="files-action-btn" id="faction-duplicate">
+        <span class="files-action-icon">📋</span>複製
+      </button>
+      <button class="files-action-btn" id="faction-move">
+        <span class="files-action-icon">📂</span>移動
+      </button>
+      <button class="files-action-btn danger" id="faction-delete">
+        <span class="files-action-icon">🗑</span>削除
+      </button>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="modal-file-actions-cancel">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL: file rename ─── -->
+
+<div class="modal-overlay" id="modal-file-rename">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">名前を変更</div>
+    <input class="modal-input" id="file-rename-input" type="text" maxlength="80">
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="modal-rename-cancel">キャンセル</button>
+      <button class="modal-btn-primary" id="modal-rename-save">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL: folder picker ─── -->
+
+<div class="modal-overlay" id="modal-folder-pick">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">移動先を選択</div>
+    <div class="folder-pick-list" id="folder-pick-list"></div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="modal-folder-pick-cancel">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var LS_KEY        = 'zairyo_v5';
+  var LS_USER_KEY   = 'zairyo_user';
+  var LS_CAL_KEY    = 'zairyo_cal_v1';
+  var LS_SITES_KEY  = 'zairyo_sites_v1';
+  var LS_FILES_KEY  = 'zairyo_files_v1';
+
+  var SITE_PALETTE = [
+    '#007AFF','#FF3B30','#34C759','#FF9500',
+    '#AF52DE','#FF2D55','#5AC8FA','#FFCC00',
+    '#FF6B35','#4CD964','#5856D6','#FF9F0A'
+  ];
+
+  var currentId   = null;
+  var currentLang = 'ja';
+  var currentTab  = 'home';
+  var counts = { kokan:0, kin:0, bata:0, sup:0, sangi:0, dogu:0 };
+  var customCount = 0;
+
+  var calYear, calMonth, calSelectedDate;
+  var calEditingEventId = null;
+  var selectedSiteId  = null;
+  var selectedLinkId  = null;
+  var fromSitesMgr    = false;
+
+  var MATERIALS = { kokan:'鋼管', kin:'金物', bata:'バタ', sup:'サポート', sangi:'桟木', dogu:'道具' };
+
+  var T = {
+    ja: {
+      appTitle:'材料準備表', homeEmpty:'保存された表がありません',
+      btnNew:'＋ 新規作成', siteLabel:'現場名', sitePlaceholder:'現場名を入力',
+      btnConfirm:'✔ 決定', btnEdit:'✎ 編集', btnReset:'リセット', btnPrint:'印刷 / PDF',
+      addSuffix:'を追加', addTitle:'＋ タイトルを追加', addRowSuffix:'行を追加',
+      deleteConfirm:'この表を削除しますか？', resetConfirm:'この表の内容をリセットしますか？',
+      rowDeleteConfirm:'この行を削除しますか？', sectionDeleteConfirm:'このセクションを削除しますか？',
+      menuProfile:'名前を設定', menuImport:'共有コードを入力',
+      modalProfileTitle:'名前を設定', modalProfileDesc:'共有した材料表に名前が表示されます。',
+      modalProfilePlaceholder:'名前を入力',
+      modalShareTitle:'共有コード', modalShareDesc:'このコードを相手に送ってください。',
+      modalImportTitle:'共有コードを入力', modalImportDesc:'受け取ったコードを貼り付けてください。',
+      modalImportPlaceholder:'ここにコードを貼り付け',
+      btnCancel:'キャンセル', btnSave:'保存', btnCopy:'コピー', btnClose:'閉じる', btnImport:'インポート',
+      copied:'コピーしました！', importOk:'インポートしました ✔', importErr:'コードが正しくありません。',
+      sharedBy:'から共有', customTitlePlaceholder:'タイトルを入力',
+      tabHome:'材料表', tabCal:'カレンダー',
+      calToday:'今日', calAddEvent:'予定を追加', calAddModalTitle:'予定を追加',
+      calEditModalTitle:'予定を編集', calNoEvents:'予定なし',
+      calEventPlaceholder:'タイトルを入力',
+    },
+    en: {
+      appTitle:'Material Prep', homeEmpty:'No saved lists',
+      btnNew:'＋ New', siteLabel:'Site Name', sitePlaceholder:'Enter site name',
+      btnConfirm:'✔ Confirm', btnEdit:'✎ Edit', btnReset:'Reset', btnPrint:'Print / PDF',
+      addSuffix:' Add', addTitle:'＋ Add Title', addRowSuffix:'Add Row',
+      deleteConfirm:'Delete this list?', resetConfirm:'Reset this list?',
+      rowDeleteConfirm:'Delete this row?', sectionDeleteConfirm:'Delete this section?',
+      menuProfile:'Set Name', menuImport:'Import Share Code',
+      modalProfileTitle:'Set Name', modalProfileDesc:'Your name will appear on shared lists.',
+      modalProfilePlaceholder:'Enter your name',
+      modalShareTitle:'Share Code', modalShareDesc:'Send this code to share your list.',
+      modalImportTitle:'Import Share Code', modalImportDesc:'Paste the code you received.',
+      modalImportPlaceholder:'Paste code here',
+      btnCancel:'Cancel', btnSave:'Save', btnCopy:'Copy', btnClose:'Close', btnImport:'Import',
+      copied:'Copied!', importOk:'Imported ✔', importErr:'Invalid code.',
+      sharedBy:'Shared by', customTitlePlaceholder:'Enter title',
+      tabHome:'Lists', tabCal:'Calendar',
+      calToday:'Today', calAddEvent:'Add Event', calAddModalTitle:'Add Event',
+      calEditModalTitle:'Edit Event', calNoEvents:'No events',
+      calEventPlaceholder:'Title',
+    },
+    vi: {
+      appTitle:'Chuẩn bị VL', homeEmpty:'Không có danh sách',
+      btnNew:'＋ Tạo mới', siteLabel:'Tên công trường', sitePlaceholder:'Nhập tên công trường',
+      btnConfirm:'✔ Xác nhận', btnEdit:'✎ Chỉnh sửa', btnReset:'Đặt lại', btnPrint:'In / PDF',
+      addSuffix:' Thêm', addTitle:'＋ Thêm tiêu đề', addRowSuffix:'Thêm hàng',
+      deleteConfirm:'Xóa danh sách này?', resetConfirm:'Đặt lại danh sách này?',
+      rowDeleteConfirm:'Xóa hàng này?', sectionDeleteConfirm:'Xóa mục này?',
+      menuProfile:'Đặt tên', menuImport:'Nhập mã chia sẻ',
+      modalProfileTitle:'Đặt tên', modalProfileDesc:'Tên của bạn sẽ hiển thị trên danh sách.',
+      modalProfilePlaceholder:'Nhập tên của bạn',
+      modalShareTitle:'Mã chia sẻ', modalShareDesc:'Gửi mã này cho người khác.',
+      modalImportTitle:'Nhập mã chia sẻ', modalImportDesc:'Dán mã bạn nhận được.',
+      modalImportPlaceholder:'Dán mã vào đây',
+      btnCancel:'Hủy', btnSave:'Lưu', btnCopy:'Sao chép', btnClose:'Đóng', btnImport:'Nhập',
+      copied:'Đã sao chép!', importOk:'Đã nhập ✔', importErr:'Mã không hợp lệ.',
+      sharedBy:'Chia sẻ bởi', customTitlePlaceholder:'Nhập tiêu đề',
+      tabHome:'Danh sách', tabCal:'Lịch',
+      calToday:'Hôm nay', calAddEvent:'Thêm sự kiện', calAddModalTitle:'Thêm sự kiện',
+      calEditModalTitle:'Sửa sự kiện', calNoEvents:'Không có sự kiện',
+      calEventPlaceholder:'Tiêu đề',
+    }
+  };
+
+  function lsLoad()  { try { var r = localStorage.getItem(LS_KEY); return r ? JSON.parse(r) : []; } catch(e) { return []; } }
+  function lsSave(a) { try { localStorage.setItem(LS_KEY, JSON.stringify(a)); } catch(e) {} }
+  function calLoad() { try { var r = localStorage.getItem(LS_CAL_KEY); return r ? JSON.parse(r) : []; } catch(e) { return []; } }
+  function calSave(a){ try { localStorage.setItem(LS_CAL_KEY, JSON.stringify(a)); } catch(e) {} }
+  function sitesLoad(){ try { var r = localStorage.getItem(LS_SITES_KEY); return r ? JSON.parse(r) : []; } catch(e) { return []; } }
+  function sitesSave(a){ try { localStorage.setItem(LS_SITES_KEY, JSON.stringify(a)); } catch(e) {} }
+
+  function openFileViewer(f) {
+    document.getElementById('fv-title').textContent = f.name;
+    document.getElementById('fv-image').style.display = 'none';
+    document.getElementById('fv-pdf-wrap').style.display = 'none';
+    document.getElementById('fv-pdf-fallback').style.display = 'none';
+    if (f.type === 'image') {
+      var img = document.getElementById('fv-image');
+      img.src = f.data; img.style.display = 'block';
+    } else {
+      try {
+        var byteStr = atob(f.data.split(',')[1]);
+        var ab = new ArrayBuffer(byteStr.length);
+        var ia = new Uint8Array(ab);
+        for (var i=0;i<byteStr.length;i++) ia[i] = byteStr.charCodeAt(i);
+        var blob = new Blob([ab], { type: 'application/pdf' });
+        var url = URL.createObjectURL(blob);
+        document.getElementById('fv-iframe').src = url;
+        document.getElementById('fv-pdf-wrap').style.display = 'block';
+      } catch(e) {
+        document.getElementById('fv-pdf-name').textContent = f.name;
+        document.getElementById('fv-pdf-fallback').style.display = 'flex';
+      }
+    }
+    document.getElementById('screen-fileview').classList.add('open');
+  }
+
+  document.getElementById('fv-close').addEventListener('click', function() {
+    document.getElementById('screen-fileview').classList.remove('open');
+    document.getElementById('fv-iframe').src = '';
+    document.getElementById('fv-image').src = '';
+  });
+
+  function getNextSiteColor() {
+    var used = sitesLoad().map(function(s){ return s.color; });
+    for (var i = 0; i < SITE_PALETTE.length; i++) {
+      if (used.indexOf(SITE_PALETTE[i]) === -1) return SITE_PALETTE[i];
+    }
+    return SITE_PALETTE[sitesLoad().length % SITE_PALETTE.length];
+  }
+  function getSiteById(id) {
+    return sitesLoad().find(function(s){ return s.id === id; }) || null;
+  }
+  function getEventColor(ev) {
+    if (ev.siteId) {
+      var s = getSiteById(ev.siteId);
+      if (s) return s.color;
+    }
+    return '#8E8E93';
+  }
+  function addSite(name) {
+    if (!name) return null;
+    var color = getNextSiteColor();
+    var site = { id: 'site_' + Date.now(), name: name, color: color };
+    var all = sitesLoad(); all.push(site); sitesSave(all);
+    return site;
+  }
+
+  function getUserName() { return localStorage.getItem(LS_USER_KEY) || ''; }
+  function setUserName(n) { if (n) localStorage.setItem(LS_USER_KEY, n); else localStorage.removeItem(LS_USER_KEY); }
+  function updateUserDisplay() {
+    var n = getUserName();
+    document.getElementById('user-display').textContent = n ? '👤 ' + n : '';
+  }
+
+  function applyLang(lang) {
+    var t = T[lang];
+    document.getElementById('app-title').textContent = t.appTitle;
+    document.getElementById('btn-new').textContent = t.btnNew;
+    var emptyEl = document.getElementById('home-empty');
+    if (emptyEl.textContent !== '') emptyEl.textContent = t.homeEmpty;
+    document.querySelector('.site-label').textContent = t.siteLabel;
+    document.getElementById('siteInput').placeholder = t.sitePlaceholder;
+    document.getElementById('btn-confirm').textContent = t.btnConfirm;
+    document.getElementById('btn-edit').textContent = t.btnEdit;
+    document.getElementById('btn-reset').textContent = t.btnReset;
+    document.getElementById('btn-print').textContent = t.btnPrint;
+    Object.keys(MATERIALS).forEach(function(type) {
+      var btn = document.getElementById('add-' + type);
+      if (btn) btn.textContent = '＋ ' + MATERIALS[type] + t.addSuffix;
+    });
+    document.getElementById('add-title-left').textContent = t.addTitle;
+    document.getElementById('add-title-right').textContent = t.addTitle;
+    document.querySelectorAll('.custom-add-btn').forEach(function(b){ b.textContent = '＋ ' + t.addRowSuffix; });
+    document.querySelectorAll('input.custom-title').forEach(function(i){ i.placeholder = t.customTitlePlaceholder; });
+    document.querySelectorAll('.lang-opt').forEach(function(o){ o.classList.toggle('active', o.dataset.lang === lang); });
+    document.getElementById('menu-profile-label').textContent = t.menuProfile;
+    document.getElementById('menu-import-label').textContent = t.menuImport;
+    document.getElementById('modal-profile-title').textContent = t.modalProfileTitle;
+    document.getElementById('modal-profile-desc').textContent = t.modalProfileDesc;
+    document.getElementById('profile-name-input').placeholder = t.modalProfilePlaceholder;
+    document.getElementById('modal-profile-cancel').textContent = t.btnCancel;
+    document.getElementById('modal-profile-save').textContent = t.btnSave;
+    document.getElementById('modal-share-title').textContent = t.modalShareTitle;
+    document.getElementById('modal-share-desc').textContent = t.modalShareDesc;
+    document.getElementById('modal-share-close').textContent = t.btnClose;
+    document.getElementById('modal-share-copy').textContent = t.btnCopy;
+    document.getElementById('modal-import-title').textContent = t.modalImportTitle;
+    document.getElementById('modal-import-desc').textContent = t.modalImportDesc;
+    document.getElementById('import-code-text').placeholder = t.modalImportPlaceholder;
+    document.getElementById('modal-import-cancel').textContent = t.btnCancel;
+    document.getElementById('modal-import-ok').textContent = t.btnImport;
+    document.getElementById('tab-label-home').textContent = t.tabHome;
+    document.getElementById('tab-label-cal').textContent = t.tabCal;
+    document.getElementById('cal-today-btn').textContent = t.calToday;
+    document.getElementById('cal-add-label').textContent = t.calAddEvent;
+    document.getElementById('event-name-input').placeholder = t.calEventPlaceholder;
+  }
+
+  document.getElementById('lang-btn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    document.getElementById('lang-dropdown').classList.toggle('open');
+  });
+  document.querySelectorAll('.lang-opt').forEach(function(o) {
+    o.addEventListener('click', function() {
+      currentLang = this.dataset.lang;
+      applyLang(currentLang);
+      document.getElementById('lang-dropdown').classList.remove('open');
+    });
+  });
+  document.addEventListener('click', function(e) {
+    document.getElementById('lang-dropdown').classList.remove('open');
+    // Close files add dropdown if clicking outside
+    var wrap = document.querySelector('.files-add-menu-wrap');
+    if (wrap && !wrap.contains(e.target)) {
+      document.getElementById('files-add-dropdown').classList.remove('open');
+    }
+  });
+
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+  document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) closeModal(overlay.id);
+    });
+  });
+
+  document.getElementById('menu-profile').addEventListener('click', function() {
+    document.getElementById('lang-dropdown').classList.remove('open');
+    document.getElementById('profile-name-input').value = getUserName();
+    openModal('modal-profile');
+  });
+  document.getElementById('modal-profile-cancel').addEventListener('click', function(){ closeModal('modal-profile'); });
+  document.getElementById('modal-profile-save').addEventListener('click', function() {
+    setUserName(document.getElementById('profile-name-input').value.trim());
+    updateUserDisplay(); closeModal('modal-profile');
+  });
+  document.getElementById('profile-name-input').addEventListener('keydown', function(e){ if (e.key==='Enter') document.getElementById('modal-profile-save').click(); });
+
+  var SHARE_PREFIX = 'ZAIRYO1:';
+  function encodeShare(entry) {
+    var p = { creator: getUserName()||'―', siteName: entry.siteName, savedAt: entry.savedAt, data: entry.data };
+    return SHARE_PREFIX + btoa(unescape(encodeURIComponent(JSON.stringify(p))));
+  }
+  function decodeShare(code) {
+    code = code.trim();
+    if (code.indexOf(SHARE_PREFIX) !== 0) throw new Error('invalid');
+    return JSON.parse(decodeURIComponent(escape(atob(code.slice(SHARE_PREFIX.length)))));
+  }
+  function showShareModal(entry) {
+    document.getElementById('share-code-text').value = encodeShare(entry);
+    document.getElementById('share-toast').textContent = '';
+    openModal('modal-share-show');
+  }
+  document.getElementById('modal-share-close').addEventListener('click', function(){ closeModal('modal-share-show'); });
+  document.getElementById('modal-share-copy').addEventListener('click', function() {
+    var ta = document.getElementById('share-code-text'); ta.select();
+    try { navigator.clipboard.writeText(ta.value).catch(function(){ document.execCommand('copy'); }); }
+    catch(e) { document.execCommand('copy'); }
+    document.getElementById('share-toast').textContent = T[currentLang].copied;
+  });
+  document.getElementById('menu-import').addEventListener('click', function() {
+    document.getElementById('lang-dropdown').classList.remove('open');
+    document.getElementById('import-code-text').value = '';
+    document.getElementById('import-toast').textContent = '';
+    openModal('modal-import');
+  });
+  document.getElementById('modal-import-cancel').addEventListener('click', function(){ closeModal('modal-import'); });
+  document.getElementById('modal-import-ok').addEventListener('click', function() {
+    try {
+      var p = decodeShare(document.getElementById('import-code-text').value);
+      var entry = { id:'t_'+Date.now(), siteName:p.siteName||'（現場名なし）', savedAt:p.savedAt||new Date().toISOString(), sharedBy:p.creator||'', data:p.data };
+      var tables = lsLoad(); tables.unshift(entry); lsSave(tables);
+      document.getElementById('import-toast').textContent = T[currentLang].importOk;
+      document.getElementById('import-toast').style.color = '#34C759';
+      setTimeout(function(){ closeModal('modal-import'); renderList(); }, 900);
+    } catch(e) {
+      document.getElementById('import-toast').textContent = T[currentLang].importErr;
+      document.getElementById('import-toast').style.color = '#FF3B30';
+    }
+  });
+
+  document.getElementById('cal-site-mgr-btn').addEventListener('click', function() {
+    fromSitesMgr = false;
+    renderSitesList();
+    openModal('modal-sites');
+  });
+  document.getElementById('modal-sites-close').addEventListener('click', function(){ closeModal('modal-sites'); });
+  document.getElementById('btn-add-site').addEventListener('click', function() {
+    fromSitesMgr = true;
+    document.getElementById('modal-site-form-title').textContent = '現場を追加';
+    document.getElementById('site-name-input').value = '';
+    openModal('modal-site-form');
+    setTimeout(function(){ document.getElementById('site-name-input').focus(); }, 150);
+  });
+  document.getElementById('event-add-site-inline').addEventListener('click', function() {
+    fromSitesMgr = false;
+    document.getElementById('modal-site-form-title').textContent = '現場を追加';
+    document.getElementById('site-name-input').value = '';
+    openModal('modal-site-form');
+    setTimeout(function(){ document.getElementById('site-name-input').focus(); }, 150);
+  });
+  document.getElementById('modal-site-form-cancel').addEventListener('click', function(){
+    closeModal('modal-site-form');
+    if (!fromSitesMgr) openModal('modal-event');
+    else openModal('modal-sites');
+  });
+  document.getElementById('modal-site-form-save').addEventListener('click', function() {
+    var name = document.getElementById('site-name-input').value.trim();
+    if (!name) { document.getElementById('site-name-input').focus(); return; }
+    var newSite = addSite(name);
+    closeModal('modal-site-form');
+    if (fromSitesMgr) {
+      renderSitesList();
+      openModal('modal-sites');
+    } else {
+      selectedSiteId = newSite.id;
+      buildEventSiteList();
+      openModal('modal-event');
+    }
+  });
+  document.getElementById('site-name-input').addEventListener('keydown', function(e){ if (e.key==='Enter') document.getElementById('modal-site-form-save').click(); });
+
+  function renderSitesList() {
+    var list = document.getElementById('sites-list');
+    list.innerHTML = '';
+    var sites = sitesLoad();
+    if (sites.length === 0) {
+      list.innerHTML = '<div class="sites-empty">登録された現場がありません</div>';
+      return;
+    }
+    sites.forEach(function(s) {
+      var row = document.createElement('div'); row.className = 'site-row';
+      var dot = document.createElement('div'); dot.className = 'site-row-dot'; dot.style.background = s.color;
+      var name = document.createElement('div'); name.className = 'site-row-name'; name.textContent = s.name;
+      var del = document.createElement('button'); del.className = 'site-row-del'; del.textContent = '×';
+      del.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (!confirm('「' + s.name + '」を削除しますか？')) return;
+        sitesSave(sitesLoad().filter(function(x){ return x.id !== s.id; }));
+        renderSitesList();
+        renderCalendar();
+      });
+      row.appendChild(dot); row.appendChild(name); row.appendChild(del);
+      list.appendChild(row);
+    });
+  }
+
+  /* ── TAB SWITCHING ── */
+  function switchTab(tab) {
+    if (tab === currentTab) return;
+    var home = document.getElementById('screen-home');
+    var cal  = document.getElementById('screen-calendar');
+    var fil  = document.getElementById('screen-files');
+    var order = { home: 0, calendar: 1, files: 2 };
+    var prev = order[currentTab], next = order[tab];
+
+    home.style.transition = cal.style.transition = fil.style.transition = 'transform 0.34s cubic-bezier(0.32,0.72,0,1)';
+
+    function pos(name) {
+      var d = order[name] - next;
+      return d === 0 ? 'translateX(0)' : d < 0 ? 'translateX(-100%)' : 'translateX(100%)';
+    }
+    home.style.transform = pos('home');
+    cal.style.transform  = pos('calendar');
+    fil.style.transform  = pos('files');
+
+    currentTab = tab;
+    document.querySelectorAll('.tab-item').forEach(function(it){ it.classList.toggle('active', it.dataset.tab === tab); });
+    if (tab === 'calendar') { initCalendar(); renderCalendar(); }
+    if (tab === 'files') { currentFolderId = null; renderFilesTab(); }
+  }
+
+  /* ── FILES TAB ── */
+  var LS_TAB_FILES_KEY = 'zairyo_tabfiles_v1';
+  var currentFolderId = null;
+  var actionTargetId  = null; // id of file/folder being acted on
+  var dragItemId      = null;
+  var dragGhostEl     = null;
+
+  function tabFilesLoad() {
+    try { var r = localStorage.getItem(LS_TAB_FILES_KEY); return r ? JSON.parse(r) : []; }
+    catch(e) { return []; }
+  }
+  function tabFilesSave(a) {
+    try { localStorage.setItem(LS_TAB_FILES_KEY, JSON.stringify(a)); }
+    catch(e) { alert('ストレージ容量が不足しています。'); }
+  }
+  function getFileSub(f) {
+    if (f.isFolder) {
+      var cnt = tabFilesLoad().filter(function(x){ return x.parentId === f.id; }).length;
+      return cnt + '件';
+    }
+    return f.type === 'image' ? '画像' : 'PDF';
+  }
+
+  function renderFilesTab() {
+    var allItems = tabFilesLoad();
+    var items = allItems.filter(function(f) {
+      return (f.parentId || null) === currentFolderId;
+    });
+
+    var backBtn = document.getElementById('files-back-btn');
+    var titleEl = document.getElementById('files-screen-title');
+    if (currentFolderId) {
+      var folder = allItems.find(function(f) { return f.id === currentFolderId; });
+      titleEl.textContent = folder ? folder.name : 'フォルダ';
+      backBtn.style.display = 'block';
+    } else {
+      titleEl.textContent = 'ファイル';
+      backBtn.style.display = 'none';
+    }
+
+    var empty   = document.getElementById('files-tab-empty');
+    var listWrap = document.getElementById('files-tab-list');
+
+    if (items.length === 0) {
+      empty.style.display = 'block';
+      listWrap.style.display = 'none';
+      return;
+    }
+    empty.style.display = 'none';
+    listWrap.style.display = 'block';
+    listWrap.innerHTML = '';
+
+    var folders = items.filter(function(f) { return  f.isFolder; });
+    var files   = items.filter(function(f) { return !f.isFolder; });
+
+    function makeGroup(label, arr) {
+      if (arr.length === 0) return;
+      var sec = document.createElement('div'); sec.className = 'files-list-section';
+      var lbl = document.createElement('div'); lbl.className = 'files-list-section-label'; lbl.textContent = label;
+      var grp = document.createElement('div'); grp.className = 'files-list-group';
+      sec.appendChild(lbl); sec.appendChild(grp);
+      arr.forEach(function(f) {
+        var row = document.createElement('div');
+        row.className = 'files-list-item';
+        row.dataset.id = f.id;
+
+        // Thumb
+        var th = document.createElement('div'); th.className = 'files-item-thumb';
+        if (f.isFolder) {
+          var fi = document.createElement('div'); fi.className = 'files-item-thumb-icon'; fi.textContent = '📁';
+          th.appendChild(fi);
+        } else if (f.type === 'image') {
+          var img = document.createElement('img'); img.src = f.data; img.alt = f.name;
+          th.appendChild(img);
+        } else {
+          var pi = document.createElement('div'); pi.className = 'files-item-thumb-icon'; pi.textContent = '📄';
+          th.appendChild(pi);
+        }
+
+        // Info
+        var info = document.createElement('div'); info.className = 'files-item-info';
+        var nm = document.createElement('div'); nm.className = 'files-item-name'; nm.textContent = f.name;
+        var sub = document.createElement('div'); sub.className = 'files-item-sub'; sub.textContent = getFileSub(f);
+        info.appendChild(nm); info.appendChild(sub);
+
+        // More button
+        var more = document.createElement('button'); more.className = 'files-item-more'; more.textContent = '···';
+        more.addEventListener('click', (function(fid, fname) {
+          return function(e) {
+            e.stopPropagation();
+            actionTargetId = fid;
+            document.getElementById('modal-file-actions-title').textContent = fname;
+            // Hide move option for folders (keep it simple)
+            document.getElementById('faction-move').style.display = f.isFolder ? 'none' : '';
+            openModal('modal-file-actions');
+          };
+        })(f.id, f.name));
+
+        if (f.isFolder) {
+          var chev = document.createElement('div'); chev.className = 'files-item-chevron'; chev.textContent = '›';
+          row.appendChild(th); row.appendChild(info); row.appendChild(more); row.appendChild(chev);
+        } else {
+          row.appendChild(th); row.appendChild(info); row.appendChild(more);
+        }
+
+        // Tap to open
+        row.addEventListener('click', (function(fi) {
+          return function(e) {
+            if (e.target.closest('.files-item-more')) return;
+            if (fi.isFolder) { currentFolderId = fi.id; renderFilesTab(); }
+            else openFileViewer(fi);
+          };
+        })(f));
+
+        // ── Drag start (long press) ──
+        var pressTimer = null;
+        row.addEventListener('touchstart', (function(fid, fdata) {
+          return function(e) {
+            if (f.isFolder) return; // only drag files
+            pressTimer = setTimeout(function() {
+              dragItemId = fid;
+              var touch = e.touches[0];
+              spawnGhost(fdata, touch.clientY);
+            }, 450);
+          };
+        })(f.id, f), { passive: true });
+        row.addEventListener('touchend', function() { clearTimeout(pressTimer); });
+        row.addEventListener('touchmove', function() { clearTimeout(pressTimer); });
+
+        // ── Drop target highlight (folders only) ──
+        if (f.isFolder) {
+          row.addEventListener('touchmove', function(e) {
+            if (!dragItemId) return;
+            e.preventDefault();
+            var touch = e.touches[0];
+            moveGhost(touch.clientY);
+            // Check if touch is over a folder row
+            var el = document.elementFromPoint(touch.clientX, touch.clientY);
+            if (el) {
+              var targetRow = el.closest('.files-list-item');
+              document.querySelectorAll('.files-list-item.drop-target').forEach(function(r){ r.classList.remove('drop-target'); });
+              if (targetRow && targetRow.dataset.id) {
+                var tItem = tabFilesLoad().find(function(x){ return x.id === targetRow.dataset.id; });
+                if (tItem && tItem.isFolder && tItem.id !== dragItemId) targetRow.classList.add('drop-target');
+              }
+            }
+            if (dragGhostEl) dragGhostEl.style.top = (touch.clientY - 30) + 'px';
+          }, { passive: false });
+          row.addEventListener('touchend', function(e) {
+            if (!dragItemId) return;
+            destroyGhost();
+            document.querySelectorAll('.files-list-item.drop-target').forEach(function(r){ r.classList.remove('drop-target'); });
+            var touch = e.changedTouches[0];
+            var el = document.elementFromPoint(touch.clientX, touch.clientY);
+            if (el) {
+              var targetRow = el.closest('.files-list-item');
+              if (targetRow && targetRow.dataset.id) {
+                var tItem = tabFilesLoad().find(function(x){ return x.id === targetRow.dataset.id; });
+                if (tItem && tItem.isFolder && tItem.id !== dragItemId) {
+                  moveFileToFolder(dragItemId, tItem.id);
+                }
+              }
+            }
+            dragItemId = null;
+          });
+        }
+
+        grp.appendChild(row);
+      });
+      listWrap.appendChild(sec);
+    }
+
+    makeGroup('フォルダ', folders);
+    makeGroup('ファイル', files);
+  }
+
+  // Ghost drag element helpers
+  function spawnGhost(f, y) {
+    var g = document.createElement('div'); g.className = 'files-drag-ghost';
+    var ico = document.createElement('div'); ico.className = 'files-drag-ghost-icon';
+    if (f.type === 'image') { var gi = document.createElement('img'); gi.src = f.data; ico.appendChild(gi); }
+    else { ico.textContent = '📄'; }
+    var nm = document.createElement('div'); nm.className = 'files-drag-ghost-name'; nm.textContent = f.name;
+    g.appendChild(ico); g.appendChild(nm);
+    g.style.top = (y - 30) + 'px';
+    document.body.appendChild(g);
+    dragGhostEl = g;
+  }
+  function moveGhost(y) { if (dragGhostEl) dragGhostEl.style.top = (y - 30) + 'px'; }
+  function destroyGhost() { if (dragGhostEl) { dragGhostEl.remove(); dragGhostEl = null; } }
+
+  function moveFileToFolder(fileId, folderId) {
+    var all = tabFilesLoad();
+    var idx = all.findIndex(function(x){ return x.id === fileId; });
+    if (idx < 0) return;
+    all[idx].parentId = folderId;
+    tabFilesSave(all);
+    renderFilesTab();
+  }
+
+  // ── File action sheet buttons ──
+  document.getElementById('modal-file-actions-cancel').addEventListener('click', function(){ closeModal('modal-file-actions'); });
+
+  document.getElementById('faction-rename').addEventListener('click', function() {
+    closeModal('modal-file-actions');
+    var all = tabFilesLoad();
+    var f = all.find(function(x){ return x.id === actionTargetId; });
+    if (!f) return;
+    document.getElementById('file-rename-input').value = f.name;
+    openModal('modal-file-rename');
+    setTimeout(function(){ document.getElementById('file-rename-input').focus(); }, 150);
+  });
+
+  document.getElementById('faction-duplicate').addEventListener('click', function() {
+    closeModal('modal-file-actions');
+    var all = tabFilesLoad();
+    var f = all.find(function(x){ return x.id === actionTargetId; });
+    if (!f) return;
+    var copy = JSON.parse(JSON.stringify(f));
+    copy.id = 'tf_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    copy.name = f.name.replace(/(\.[^.]+)?$/, function(ext){ return 'のコピー' + ext; });
+    all.push(copy);
+    tabFilesSave(all);
+    renderFilesTab();
+  });
+
+  document.getElementById('faction-move').addEventListener('click', function() {
+    closeModal('modal-file-actions');
+    var all = tabFilesLoad();
+    var folders = all.filter(function(x){ return x.isFolder; });
+    var list = document.getElementById('folder-pick-list');
+    list.innerHTML = '';
+    // "Root" option
+    var rootItem = document.createElement('div'); rootItem.className = 'folder-pick-item';
+    rootItem.innerHTML = '<span class="folder-pick-icon">🏠</span><span>ルート（トップレベル）</span>';
+    rootItem.addEventListener('click', function(){
+      closeModal('modal-folder-pick');
+      var all2 = tabFilesLoad();
+      var idx = all2.findIndex(function(x){ return x.id === actionTargetId; });
+      if (idx >= 0) { all2[idx].parentId = null; tabFilesSave(all2); renderFilesTab(); }
+    });
+    list.appendChild(rootItem);
+    folders.forEach(function(fd) {
+      if (fd.id === actionTargetId) return;
+      var item = document.createElement('div'); item.className = 'folder-pick-item';
+      item.innerHTML = '<span class="folder-pick-icon">📁</span><span>' + fd.name + '</span>';
+      item.addEventListener('click', (function(fid){
+        return function(){
+          closeModal('modal-folder-pick');
+          moveFileToFolder(actionTargetId, fid);
+        };
+      })(fd.id));
+      list.appendChild(item);
+    });
+    if (folders.length === 0) {
+      var none = document.createElement('div'); none.style.cssText = 'font-size:14px;color:#AEAEB2;text-align:center;padding:20px;';
+      none.textContent = 'フォルダがありません'; list.appendChild(none);
+    }
+    openModal('modal-folder-pick');
+  });
+
+  document.getElementById('faction-delete').addEventListener('click', function() {
+    closeModal('modal-file-actions');
+    var all = tabFilesLoad();
+    var f = all.find(function(x){ return x.id === actionTargetId; });
+    if (!f) return;
+    var msg = f.isFolder
+      ? '「' + f.name + '」とその中身を削除しますか？'
+      : '「' + f.name + '」を削除しますか？';
+    if (!confirm(msg)) return;
+    var result = all.filter(function(x){ return x.id !== actionTargetId && x.parentId !== actionTargetId; });
+    tabFilesSave(result);
+    renderFilesTab();
+  });
+
+  document.getElementById('modal-rename-cancel').addEventListener('click', function(){ closeModal('modal-file-rename'); });
+  document.getElementById('modal-rename-save').addEventListener('click', function() {
+    var name = document.getElementById('file-rename-input').value.trim();
+    if (!name) return;
+    var all = tabFilesLoad();
+    var idx = all.findIndex(function(x){ return x.id === actionTargetId; });
+    if (idx >= 0) { all[idx].name = name; tabFilesSave(all); }
+    closeModal('modal-file-rename');
+    renderFilesTab();
+  });
+  document.getElementById('file-rename-input').addEventListener('keydown', function(e){ if (e.key==='Enter') document.getElementById('modal-rename-save').click(); });
+  document.getElementById('modal-folder-pick-cancel').addEventListener('click', function(){ closeModal('modal-folder-pick'); });
+
+  // Files add dropdown toggle
+  document.getElementById('files-add-btn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    document.getElementById('files-add-dropdown').classList.toggle('open');
+  });
+
+  document.getElementById('files-opt-file').addEventListener('click', function() {
+    document.getElementById('files-add-dropdown').classList.remove('open');
+    document.getElementById('files-tab-input').click();
+  });
+
+  document.getElementById('files-opt-folder').addEventListener('click', function() {
+    document.getElementById('files-add-dropdown').classList.remove('open');
+    document.getElementById('folder-name-input').value = '';
+    openModal('modal-new-folder');
+    setTimeout(function(){ document.getElementById('folder-name-input').focus(); }, 150);
+  });
+
+  document.getElementById('modal-folder-cancel').addEventListener('click', function() { closeModal('modal-new-folder'); });
+  document.getElementById('modal-folder-save').addEventListener('click', function() {
+    var name = document.getElementById('folder-name-input').value.trim();
+    if (!name) { document.getElementById('folder-name-input').focus(); return; }
+    var existing = tabFilesLoad();
+    existing.push({
+      id: 'folder_' + Date.now() + '_' + Math.random().toString(36).slice(2),
+      name: name, isFolder: true, parentId: currentFolderId
+    });
+    tabFilesSave(existing);
+    closeModal('modal-new-folder');
+    renderFilesTab();
+  });
+  document.getElementById('folder-name-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') document.getElementById('modal-folder-save').click();
+  });
+
+  document.getElementById('files-back-btn').addEventListener('click', function() {
+    currentFolderId = null;
+    renderFilesTab();
+  });
+
+  document.getElementById('files-tab-input').addEventListener('change', function() {
+    var files = this.files; if (!files || !files.length) return;
+    var existing = tabFilesLoad();
+    Array.prototype.slice.call(files, 0, 50).forEach(function(file) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        existing.push({
+          id: 'tf_' + Date.now() + '_' + Math.random().toString(36).slice(2),
+          name: file.name,
+          type: file.type.startsWith('image/') ? 'image' : 'pdf',
+          data: e.target.result,
+          isFolder: false,
+          parentId: currentFolderId
+        });
+        tabFilesSave(existing);
+        renderFilesTab();
+      };
+      reader.readAsDataURL(file);
+    });
+    this.value = '';
+  });
+
+  document.querySelectorAll('.tab-item').forEach(function(item) {
+    item.addEventListener('click', function() { switchTab(this.dataset.tab); });
+  });
+
+  function showHome() {
+    var edit = document.getElementById('screen-edit');
+    var tb   = document.getElementById('tab-bar');
+    edit.classList.remove('open');
+    tb.classList.remove('hidden');
+    document.body.classList.remove('confirmed');
+    applyLang(currentLang);
+    updateUserDisplay();
+    renderList();
+  }
+  function showEdit() {
+    var edit = document.getElementById('screen-edit');
+    var tb   = document.getElementById('tab-bar');
+    tb.classList.add('hidden');
+    requestAnimationFrame(function(){ edit.classList.add('open'); });
+    applyLang(currentLang);
+    edit.scrollTop = 0;
+  }
+
+  /* ── SWIPE ── */
+  var swTouchId = null, swStartX = 0, swStartY = 0, swAxis = null;
+  var swEditActive = false;
+
+  document.addEventListener('touchstart', function(e) {
+    if (e.touches.length !== 1) return;
+    swTouchId = e.touches[0].identifier;
+    swStartX  = e.touches[0].clientX;
+    swStartY  = e.touches[0].clientY;
+    swAxis    = null;
+    swEditActive = document.getElementById('screen-edit').classList.contains('open');
+  }, { passive: true });
+
+  document.addEventListener('touchmove', function(e) {
+    if (swAxis) return;
+    var t = null;
+    for (var i = 0; i < e.touches.length; i++) { if (e.touches[i].identifier === swTouchId) { t = e.touches[i]; break; } }
+    if (!t) return;
+    var dx = t.clientX - swStartX;
+    var dy = t.clientY - swStartY;
+    if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
+      swAxis = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
+    }
+  }, { passive: true });
+
+  document.addEventListener('touchend', function(e) {
+    var t = null;
+    for (var i = 0; i < e.changedTouches.length; i++) { if (e.changedTouches[i].identifier === swTouchId) { t = e.changedTouches[i]; break; } }
+    if (!t) return;
+    var dx = t.clientX - swStartX;
+    if (swAxis !== 'h') return;
+    if (Math.abs(dx) < 55) return;
+    if (document.querySelector('.modal-overlay.open')) return;
+    if (swEditActive) {
+      if (dx > 55 && swStartX < 40) document.getElementById('btn-back').click();
+      return;
+    }
+    if      (dx < -55 && currentTab === 'home')     switchTab('calendar');
+    else if (dx < -55 && currentTab === 'calendar') switchTab('files');
+    else if (dx >  55 && currentTab === 'files')    switchTab('calendar');
+    else if (dx >  55 && currentTab === 'calendar') switchTab('home');
+  }, { passive: true });
+
+  /* ── HOME LIST ── */
+  function renderList() {
+    var tables = lsLoad();
+    var listEl = document.getElementById('home-list');
+    var emptyEl = document.getElementById('home-empty');
+    listEl.innerHTML = '';
+    if (tables.length === 0) { emptyEl.textContent = T[currentLang].homeEmpty; return; }
+    emptyEl.textContent = '';
+    var group = document.createElement('div');
+    group.style.cssText = 'background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.07);margin-bottom:20px;';
+    tables.forEach(function(t, idx) {
+      var card = document.createElement('div'); card.className = 'card';
+      if (idx > 0) card.style.borderTop = '0.5px solid #E5E5EA';
+      var d = t.savedAt ? new Date(t.savedAt).toLocaleDateString('ja-JP') : '';
+      var main = document.createElement('div'); main.className = 'card-main';
+      var metaHtml = '<div class="card-meta">'+d+'</div>';
+      if (t.sharedBy) metaHtml += '<div class="card-shared-by">📤 '+t.sharedBy+' '+T[currentLang].sharedBy+'</div>';
+      main.innerHTML =
+        '<div class="card-icon">📋</div>' +
+        '<div class="card-text"><div class="card-name">'+(t.siteName||'（現場名なし）')+'</div>'+metaHtml+'</div>' +
+        '<div class="card-chevron">›</div>';
+      main.addEventListener('click', (function(id){ return function(){ openTable(id); }; })(t.id));
+      var acts = document.createElement('div'); acts.className = 'card-actions';
+      var share = document.createElement('button'); share.className = 'card-share'; share.textContent = '📤';
+      share.addEventListener('click', (function(entry){ return function(e){ e.stopPropagation(); showShareModal(entry); }; })(t));
+      var del = document.createElement('button'); del.className = 'card-del'; del.textContent = '✕';
+      del.addEventListener('click', (function(id){ return function(){ deleteEntry(id); }; })(t.id));
+      acts.appendChild(share); acts.appendChild(del);
+      card.appendChild(main); card.appendChild(acts);
+      group.appendChild(card);
+    });
+    listEl.appendChild(group);
+  }
+
+  function deleteEntry(id) {
+    if (!confirm(T[currentLang].deleteConfirm)) return;
+    lsSave(lsLoad().filter(function(t){ return t.id !== id; }));
+    renderList();
+  }
+  function openTable(id) {
+    var t = lsLoad().find(function(x){ return x.id === id; });
+    if (!t) return;
+    currentId = id; restoreFromData(t.data); showEdit();
+  }
+
+  document.getElementById('btn-new').addEventListener('click', function() {
+    currentId = 't_' + Date.now(); buildDefaults(); showEdit();
+  });
+  document.getElementById('btn-back').addEventListener('click', function() {
+    var tables = lsLoad();
+    var idx = tables.findIndex(function(x){ return x.id === currentId; });
+    var existing = idx >= 0 ? tables[idx] : {};
+    var entry = { id:currentId, siteName:document.getElementById('siteInput').value.trim()||'（現場名なし）', savedAt:new Date().toISOString(), sharedBy:existing.sharedBy||'', data:captureData() };
+    if (idx >= 0) { tables[idx] = entry; } else { tables.unshift(entry); }
+    lsSave(tables); showHome();
+  });
+
+  function makeRow(type, i, fixedName) {
+    var tr = document.createElement('tr');
+    var qKey, nHtml, unit;
+    if (type === 'kokan') {
+      qKey='k'+i+'_q'; unit='本';
+      nHtml = fixedName !== undefined ? '<td class="name-td">'+fixedName+'</td>' : '<td class="name-td"><input class="ni" type="text" data-key="k'+i+'_n" placeholder="寸法"></td>';
+    } else if (type === 'kin') {
+      qKey='n'+i+'_q'; unit='袋';
+      nHtml='<td class="name-td"><input class="ni" type="text" data-key="n'+i+'_n" placeholder="名前"></td>';
+    } else if (type === 'bata') {
+      qKey='b'+i+'_q'; unit='本';
+      nHtml='<td class="name-td"><input class="ni" type="text" data-key="b'+i+'_n" placeholder="名前"></td>';
+    } else if (type === 'sup') {
+      qKey='s'+i+'_q'; unit='本';
+      nHtml='<td class="name-td"><input class="shaku" type="text" data-key="s'+i+'_s" placeholder="0">尺</td>';
+    } else if (type === 'sangi') {
+      qKey='sg'+i+'_q'; unit='本';
+      nHtml='<td class="name-td"><input class="ni" type="text" data-key="sg'+i+'_n" placeholder="寸法"></td>';
+    } else {
+      qKey='d'+i+'_q'; unit='';
+      nHtml='<td class="name-td"><input class="ni" type="text" data-key="d'+i+'_n" placeholder="道具名"></td>';
+    }
+    var unitSpan = unit ? '<span class="unit">'+unit+'</span>' : '';
+    tr.innerHTML = nHtml + '<td class="qty-td"><input class="qty" type="number" min="0" data-key="'+qKey+'">' + unitSpan + '</td><td class="del-td"><button class="del">✕</button></td>';
+    return tr;
+  }
+  function makeCustomRow(ci, ri) {
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td class="name-td"><input class="ni" type="text" data-key="cx'+ci+'_r'+ri+'_n" placeholder="名前"></td><td class="qty-td"><input class="qty" type="number" min="0" data-key="cx'+ci+'_r'+ri+'_q"></td><td class="del-td"><button class="del">✕</button></td>';
+    return tr;
+  }
+  function makeCustomSection(colId, ci, titleVal) {
+    var wrap = document.createElement('div'); wrap.className = 'custom-section'; wrap.dataset.ci = ci;
+    var sdel = document.createElement('button'); sdel.className = 'section-del-btn'; sdel.textContent = '✕ セクションを削除';
+    sdel.addEventListener('click', function() { if (!confirm(T[currentLang].sectionDeleteConfirm)) return; wrap.remove(); });
+    var table = document.createElement('table'); table.className = 'custom-table';
+    var thead = document.createElement('thead'); var thr = document.createElement('tr'); var th = document.createElement('th'); th.setAttribute('colspan','3');
+    var titleInput = document.createElement('input'); titleInput.className = 'custom-title'; titleInput.type = 'text'; titleInput.placeholder = T[currentLang].customTitlePlaceholder; titleInput.dataset.key = 'cx'+ci+'_title';
+    if (titleVal) titleInput.value = titleVal;
+    th.appendChild(titleInput); thr.appendChild(th); thead.appendChild(thr);
+    var tbody = document.createElement('tbody'); tbody.id = 'cx'+ci+'-body';
+    table.appendChild(thead); table.appendChild(tbody);
+    var addRow = document.createElement('button'); addRow.className = 'add-btn custom-add-btn'; addRow.textContent = '＋ ' + T[currentLang].addRowSuffix;
+    addRow.addEventListener('click', function() { tbody.appendChild(makeCustomRow(ci, tbody.querySelectorAll('tr').length)); });
+    wrap.appendChild(sdel); wrap.appendChild(table); wrap.appendChild(addRow);
+    var col = document.getElementById(colId);
+    col.insertBefore(wrap, document.getElementById('add-title-' + (colId === 'col-left' ? 'left' : 'right')));
+    return { tbody: tbody, ci: ci };
+  }
+  function checkVis(type) {
+    var has = document.getElementById(type+'-body').querySelectorAll('tr').length > 0;
+    document.getElementById(type+'-table').style.display = has ? '' : 'none';
+  }
+  document.getElementById('add-title-left').addEventListener('click', function() { makeCustomSection('col-left', customCount++, ''); });
+  document.getElementById('add-title-right').addEventListener('click', function() { makeCustomSection('col-right', customCount++, ''); });
+
+  function buildDefaults() {
+    counts = { kokan:0, kin:0, bata:0, sup:0, sangi:0, dogu:0 }; customCount = 0;
+    document.querySelectorAll('.custom-section').forEach(function(el){ el.remove(); });
+    ['kokan','kin','bata','sup','sangi','dogu'].forEach(function(t){ document.getElementById(t+'-body').innerHTML = ''; });
+    document.getElementById('siteInput').value = '';
+    document.body.classList.remove('confirmed');
+    var kb = document.getElementById('kokan-body');
+    ['4m','3.5m','3m','2.5m','2m','1.5m','1m'].forEach(function(n){ kb.appendChild(makeRow('kokan', counts.kokan++, n)); });
+    var nb = document.getElementById('kin-body');
+    ['ホームタイ','ダブル','足長','短足'].forEach(function(n){ var tr = makeRow('kin', counts.kin++); tr.querySelector('input.ni').value = n; nb.appendChild(tr); });
+    document.getElementById('bata-body').appendChild(makeRow('bata', counts.bata++));
+    var sb = document.getElementById('sup-body');
+    for (var i=0;i<3;i++) sb.appendChild(makeRow('sup', counts.sup++));
+    document.getElementById('sangi-body').appendChild(makeRow('sangi', counts.sangi++));
+    var db = document.getElementById('dogu-body');
+    for (var j=0;j<10;j++) db.appendChild(makeRow('dogu', counts.dogu++));
+    ['kokan','kin','bata','sup','sangi','dogu'].forEach(checkVis);
+  }
+
+  function captureData() {
+    var data = { site: document.getElementById('siteInput').value, rows: {}, custom: [] };
+    ['kokan','kin','bata','sup','sangi','dogu'].forEach(function(type){
+      var rows = [];
+      document.getElementById(type+'-body').querySelectorAll('tr').forEach(function(tr){
+        var cells = {};
+        tr.querySelectorAll('[data-key]').forEach(function(el){ cells[el.dataset.key] = el.value; });
+        var nd = tr.querySelector('.name-td');
+        if (nd && !nd.querySelector('input')) cells['_fixed'] = nd.textContent.trim();
+        rows.push(cells);
+      });
+      data.rows[type] = rows;
+    });
+    document.querySelectorAll('.custom-section').forEach(function(sec) {
+      var ci = sec.dataset.ci; var colId = sec.closest('.col-wrap').id;
+      var titleEl = sec.querySelector('input.custom-title'); var title = titleEl ? titleEl.value : '';
+      var rows = [];
+      sec.querySelectorAll('tbody tr').forEach(function(tr){
+        var cells = {};
+        tr.querySelectorAll('[data-key]').forEach(function(el){ cells[el.dataset.key] = el.value; });
+        rows.push(cells);
+      });
+      data.custom.push({ ci: ci, colId: colId, title: title, rows: rows });
+    });
+    return data;
+  }
+
+  function restoreFromData(data) {
+    counts = { kokan:0, kin:0, bata:0, sup:0, sangi:0, dogu:0 }; customCount = 0;
+    document.querySelectorAll('.custom-section').forEach(function(el){ el.remove(); });
+    ['kokan','kin','bata','sup','sangi','dogu'].forEach(function(t){ document.getElementById(t+'-body').innerHTML = ''; });
+    document.body.classList.remove('confirmed');
+    if (!data) { buildDefaults(); return; }
+    document.getElementById('siteInput').value = data.site || '';
+    if (!data.rows) { buildDefaults(); return; }
+    ['kokan','kin','bata','sup','sangi','dogu'].forEach(function(type){
+      var saved = data.rows[type]; if (!saved) return;
+      var tbody = document.getElementById(type+'-body');
+      saved.forEach(function(cells){
+        var i = counts[type]++;
+        var tr = cells['_fixed'] ? makeRow('kokan', i, cells['_fixed']) : makeRow(type, i);
+        tbody.appendChild(tr);
+        Object.keys(cells).forEach(function(key){ if (key==='_fixed') return; var el = tr.querySelector('[data-key="'+key+'"]'); if (el) el.value = cells[key]; });
+      });
+      checkVis(type);
+    });
+    if (data.custom) {
+      data.custom.forEach(function(sec) {
+        var ci = parseInt(sec.ci, 10); if (ci >= customCount) customCount = ci + 1;
+        var result = makeCustomSection(sec.colId, ci, sec.title);
+        sec.rows.forEach(function(cells, ri) {
+          var tr = makeCustomRow(ci, ri); result.tbody.appendChild(tr);
+          Object.keys(cells).forEach(function(key){ var el = tr.querySelector('[data-key="'+key+'"]'); if (el) el.value = cells[key]; });
+        });
+      });
+    }
+  }
+
+  document.body.addEventListener('click', function(e){
+    var btn = e.target.closest('.del'); if (!btn) return;
+    if (!confirm(T[currentLang].rowDeleteConfirm)) return;
+    var tr = btn.closest('tr'); var tbody = tr.closest('tbody');
+    var typeMatch = tbody.id.replace('-body',''); tr.remove();
+    if (['kokan','kin','bata','sup','sangi','dogu'].indexOf(typeMatch) >= 0) checkVis(typeMatch);
+  });
+  ['kokan','kin','bata','sup','sangi','dogu'].forEach(function(type){
+    document.getElementById('add-'+type).addEventListener('click', function(){ document.getElementById(type+'-body').appendChild(makeRow(type, counts[type]++)); checkVis(type); });
+  });
+  document.getElementById('sheet').addEventListener('keydown', function(e){
+    if (e.key !== 'Enter') return; e.preventDefault();
+    var inputs = Array.from(document.querySelectorAll('#sheet input'));
+    var idx = inputs.indexOf(e.target);
+    if (idx >= 0 && idx < inputs.length - 1) inputs[idx+1].focus();
+  });
+  document.getElementById('btn-confirm').addEventListener('click', function(){ document.body.classList.add('confirmed'); applyLang(currentLang); });
+  document.getElementById('btn-edit').addEventListener('click', function(){ document.body.classList.remove('confirmed'); applyLang(currentLang); });
+  document.getElementById('btn-reset').addEventListener('click', function(){ if (!confirm(T[currentLang].resetConfirm)) return; buildDefaults(); applyLang(currentLang); });
+  document.getElementById('btn-print').addEventListener('click', function(){ window.print(); });
+
+  /* ── CALENDAR ── */
+  function dateKey(y,m,d){ return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0'); }
+  function normalizeEvent(ev) {
+    var sd = ev.startDate || ev.date;
+    var ed = ev.endDate || sd;
+    return { id:ev.id, date:ev.date||sd, startDate:sd, endDate:ed,
+             startTime:ev.startTime||'', endTime:ev.endTime||'',
+             title:ev.title, siteId:ev.siteId, linkedId:ev.linkedId };
+  }
+  function getEventsForDate(dk){
+    return calLoad().map(normalizeEvent).filter(function(ev){ return ev.startDate<=dk && dk<=ev.endDate; });
+  }
+  function formatDateShort(dk){ if(!dk) return ''; var p=dk.split('-'); return parseInt(p[1])+'/'+parseInt(p[2]); }
+
+  function initCalendar() {
+    if (calYear !== undefined) return;
+    var now = new Date();
+    calYear = now.getFullYear(); calMonth = now.getMonth();
+    calSelectedDate = dateKey(calYear, calMonth, now.getDate());
+  }
+
+  function renderCalendar() {
+    initCalendar();
+    var grid = document.getElementById('cal-grid');
+    grid.innerHTML = '';
+    var now = new Date();
+    var todayKey = dateKey(now.getFullYear(), now.getMonth(), now.getDate());
+    var allEvents = calLoad().map(normalizeEvent);
+
+    var monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+    document.getElementById('cal-month-label').innerHTML = calYear+'年<span>'+monthNames[calMonth]+'</span>';
+
+    var firstDay = new Date(calYear, calMonth, 1).getDay();
+    var daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+    var daysInPrev = new Date(calYear, calMonth, 0).getDate();
+    var totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+    var totalRows  = totalCells / 7;
+
+    // ── Build cells ──
+    for (var i = 0; i < totalCells; i++) {
+      var cell = document.createElement('div'); cell.className = 'cal-cell';
+      var day, year = calYear, month = calMonth, isOther = false;
+      if (i < firstDay) { day = daysInPrev - firstDay + i + 1; month = calMonth-1; if (month<0){month=11;year--;} isOther=true; }
+      else if (i >= firstDay + daysInMonth) { day = i - firstDay - daysInMonth + 1; month = calMonth+1; if (month>11){month=0;year++;} isOther=true; }
+      else { day = i - firstDay + 1; }
+      var dk = dateKey(year, month, day);
+      var dow = i % 7;
+      // Explicit placement — prevents auto-placement being displaced by span-bar siblings
+      cell.style.gridColumn = String(dow + 1);
+      cell.style.gridRow    = String(Math.floor(i / 7) + 1);
+      // Borders in JS (nth-child unreliable with explicit+auto mixed children)
+      if (dow === 6)            cell.style.borderRight  = 'none';
+      if (i >= totalCells - 7) cell.style.borderBottom = 'none';
+      if (isOther) cell.classList.add('other-month');
+      if (dow === 0) cell.classList.add('sun');
+      if (dow === 6) cell.classList.add('sat');
+      if (dk === todayKey)        cell.classList.add('today');
+      if (dk === calSelectedDate) cell.classList.add('selected');
+
+      var dayNum = document.createElement('div'); dayNum.className = 'cal-day-num'; dayNum.textContent = day;
+      cell.appendChild(dayNum);
+
+      // Single-day events only inside cells
+      var singleEvs = allEvents.filter(function(ev){ return ev.startDate === ev.endDate && ev.startDate === dk; });
+      singleEvs.slice(0, 2).forEach(function(ev) {
+        var bar = document.createElement('div'); bar.className = 'cal-ev-bar';
+        bar.style.background = getEventColor(ev);
+        var txt = ev.title || '';
+        bar.textContent = txt.length > 7 ? txt.slice(0,7) : txt;
+        cell.appendChild(bar);
+      });
+      if (singleEvs.length > 2) {
+        var more = document.createElement('div'); more.className = 'cal-ev-more';
+        more.textContent = '+' + (singleEvs.length - 2);
+        cell.appendChild(more);
+      }
+
+      (function(dk2){ cell.addEventListener('click', function(){ selectDate(dk2); }); })(dk);
+      grid.appendChild(cell);
+    }
+
+    // ── Multi-day overlay bars as CSS Grid spanning children ──
+    var multiEvs = allEvents.filter(function(ev){ return ev.startDate !== ev.endDate; });
+    multiEvs.sort(function(a,b){ return a.startDate < b.startDate ? -1 : a.startDate > b.startDate ? 1 : 0; });
+
+    if (multiEvs.length > 0) {
+      // First visible cell's date in ms
+      var tmp = new Date(calYear, calMonth, 1 - firstDay);
+      var fcMs = new Date(dateKey(tmp.getFullYear(), tmp.getMonth(), tmp.getDate()) + 'T00:00:00').getTime();
+
+      // Per-row slot occupancy: rowSlots[rowIdx][slotIdx] = eventId or null
+      var MAX_SLOTS = 3;
+      var rowSlots = [];
+      for (var ri = 0; ri < totalRows; ri++) { rowSlots.push([null, null, null]); }
+
+      // Assign each multi-day event a slot per row it occupies
+      // Map: evId -> slot (same slot used across all rows for visual consistency)
+      var evSlotMap = {};
+      multiEvs.forEach(function(ev) {
+        var sMs = new Date(ev.startDate + 'T00:00:00').getTime();
+        var eMs = new Date(ev.endDate   + 'T00:00:00').getTime();
+        var sc  = Math.round((sMs - fcMs) / 86400000);
+        var ec  = Math.round((eMs - fcMs) / 86400000);
+        var vs  = Math.max(0, sc);
+        var ve  = Math.min(totalCells - 1, ec);
+        if (vs > ve) return;
+
+        // Find a slot free in ALL rows this event spans
+        var firstRow = Math.floor(vs / 7);
+        var lastRow  = Math.floor(ve / 7);
+        var slot = -1;
+        for (var s = 0; s < MAX_SLOTS; s++) {
+          var free = true;
+          for (var r = firstRow; r <= lastRow; r++) {
+            if (rowSlots[r][s] !== null) { free = false; break; }
+          }
+          if (free) { slot = s; break; }
+        }
+        if (slot === -1) slot = MAX_SLOTS - 1; // fallback: reuse last slot
+
+        // Mark slots occupied
+        for (var r2 = firstRow; r2 <= lastRow; r2++) rowSlots[r2][slot] = ev.id;
+        evSlotMap[ev.id] = slot;
+
+        var color = getEventColor(ev);
+
+        // Render one bar per week-row
+        for (var ri2 = firstRow; ri2 <= lastRow; ri2++) {
+          var ss = Math.max(vs, ri2 * 7);
+          var se = Math.min(ve, ri2 * 7 + 6);
+
+          var bar = document.createElement('div');
+          bar.className = 'cal-span-bar';
+          bar.style.gridColumn = (ss % 7 + 1) + ' / ' + (se % 7 + 2);
+          bar.style.gridRow    = String(ri2 + 1);
+          bar.style.background = color;
+          bar.style.marginTop  = (29 + slot * 14) + 'px';
+
+          var isS = (ss === vs);
+          var isE = (se === ve);
+          bar.style.borderRadius = (isS ? '4px' : '0') + ' ' +
+                                   (isE ? '4px' : '0') + ' ' +
+                                   (isE ? '4px' : '0') + ' ' +
+                                   (isS ? '4px' : '0');
+          bar.style.marginLeft  = isS ? '2px' : '0';
+          bar.style.marginRight = isE ? '2px' : '0';
+
+          // Show title at visual start of each row segment
+          if (isS || ss % 7 === 0) {
+            var txt = ev.title || '';
+            bar.textContent = txt.length > 8 ? txt.slice(0, 8) : txt;
+          }
+
+          grid.appendChild(bar);
+        }
+      });
+    }
+
+    renderSiteLegend();
+    renderEvents();
+  }
+
+  function renderSiteLegend() {
+    var legend = document.getElementById('cal-site-legend');
+    legend.innerHTML = '';
+    var sites = sitesLoad();
+    sites.forEach(function(s) {
+      var chip = document.createElement('div'); chip.className = 'cal-site-chip';
+      var dot = document.createElement('div'); dot.className = 'cal-site-chip-dot'; dot.style.background = s.color;
+      var name = document.createElement('span'); name.textContent = s.name;
+      chip.appendChild(dot); chip.appendChild(name);
+      legend.appendChild(chip);
+    });
+  }
+
+  function selectDate(dk) { calSelectedDate = dk; renderCalendar(); }
+
+  function renderEvents() {
+    var events = getEventsForDate(calSelectedDate);
+    var listEl = document.getElementById('cal-event-list');
+    var dateEl = document.getElementById('cal-events-date');
+    listEl.innerHTML = '';
+    if (calSelectedDate) {
+      var parts = calSelectedDate.split('-');
+      var y = parseInt(parts[0]), m = parseInt(parts[1])-1, d = parseInt(parts[2]);
+      var dow = ['日','月','火','水','木','金','土'][new Date(y,m,d).getDay()];
+      dateEl.textContent = y+'年'+(m+1)+'月'+d+'日（'+dow+'）';
+    }
+    if (events.length === 0) { listEl.innerHTML = '<div class="cal-no-events">'+T[currentLang].calNoEvents+'</div>'; return; }
+    var tables = lsLoad();
+    events.forEach(function(ev) {
+      var row = document.createElement('div'); row.className = 'cal-event-row'; row.style.cursor = 'pointer';
+      var color = getEventColor(ev);
+      var dot = document.createElement('div'); dot.className = 'cal-event-color'; dot.style.background = color;
+      var info = document.createElement('div'); info.className = 'cal-event-info';
+      var title = document.createElement('div'); title.className = 'cal-event-title'; title.textContent = ev.title || '（タイトルなし）';
+      info.appendChild(title);
+      // Time / date-range display
+      var isMulti = ev.startDate !== ev.endDate;
+      var timeStr = '';
+      if (isMulti) {
+        timeStr = formatDateShort(ev.startDate);
+        if (ev.startTime) timeStr += ' ' + ev.startTime;
+        timeStr += ' 〜 ' + formatDateShort(ev.endDate);
+        if (ev.endTime) timeStr += ' ' + ev.endTime;
+      } else if (ev.startTime || ev.endTime) {
+        timeStr = (ev.startTime || '') + (ev.startTime && ev.endTime ? ' 〜 ' : '') + (ev.endTime || '');
+      }
+      if (timeStr) {
+        var timeSub = document.createElement('div'); timeSub.className = 'cal-event-sub';
+        timeSub.textContent = '🕐 ' + timeStr; info.appendChild(timeSub);
+      }
+      if (ev.siteId) {
+        var site = getSiteById(ev.siteId);
+        if (site) { var sub = document.createElement('div'); sub.className = 'cal-event-sub'; sub.textContent = '🏗 '+site.name; info.appendChild(sub); }
+      }
+      if (ev.linkedId) {
+        var linked = tables.find(function(t){ return t.id === ev.linkedId; });
+        if (linked) { var sub2 = document.createElement('div'); sub2.className = 'cal-event-sub'; sub2.textContent = '📋 '+(linked.siteName||'（現場名なし）'); info.appendChild(sub2); }
+      }
+      var del = document.createElement('button'); del.className = 'cal-event-del'; del.textContent = '×';
+      del.addEventListener('click', function(e){ e.stopPropagation(); var all = calLoad(); calSave(all.filter(function(x){ return x.id !== ev.id; })); renderCalendar(); });
+      row.appendChild(dot); row.appendChild(info); row.appendChild(del);
+      // Tap row to edit
+      row.addEventListener('click', (function(evSnap){
+        return function(e) {
+          if (e.target.closest('.cal-event-del')) return;
+          if (evSnap.linkedId && !e.target.closest('.cal-event-del')) { openTable(evSnap.linkedId); return; }
+          // Open edit modal
+          calEditingEventId = evSnap.id;
+          selectedSiteId = evSnap.siteId || null;
+          selectedLinkId = evSnap.linkedId || null;
+          document.getElementById('event-name-input').value = evSnap.title || '';
+          document.getElementById('event-start-date').value = evSnap.startDate || '';
+          document.getElementById('event-start-time').value = evSnap.startTime || '';
+          document.getElementById('event-end-date').value = evSnap.endDate || '';
+          document.getElementById('event-end-time').value = evSnap.endTime || '';
+          document.getElementById('modal-event-title').textContent = T[currentLang].calEditModalTitle;
+          document.getElementById('modal-event-save').textContent = '保存';
+          buildEventSiteList(); buildEventLinkList();
+          openModal('modal-event');
+        };
+      })(ev));
+      listEl.appendChild(row);
+    });
+  }
+
+  function buildEventSiteList() {
+    var container = document.getElementById('event-site-list');
+    container.innerHTML = '';
+    var sites = sitesLoad();
+    if (sites.length === 0) {
+      var none = document.createElement('div'); none.className = 'modal-no-sites'; none.textContent = '現場がまだ登録されていません';
+      container.appendChild(none);
+      return;
+    }
+    var list = document.createElement('div'); list.className = 'modal-site-list';
+    var noneItem = document.createElement('div'); noneItem.className = 'modal-site-item' + (selectedSiteId === null ? ' selected' : '');
+    noneItem.innerHTML = '<div class="modal-site-dot" style="background:#E5E5EA"></div><div class="modal-site-name">なし</div>' + (selectedSiteId === null ? '<div class="modal-site-check">✓</div>' : '');
+    noneItem.addEventListener('click', function(){ selectedSiteId = null; buildEventSiteList(); });
+    list.appendChild(noneItem);
+    sites.forEach(function(s) {
+      var item = document.createElement('div'); item.className = 'modal-site-item' + (selectedSiteId === s.id ? ' selected' : '');
+      item.innerHTML = '<div class="modal-site-dot" style="background:'+s.color+'"></div><div class="modal-site-name">'+s.name+'</div>' + (selectedSiteId === s.id ? '<div class="modal-site-check">✓</div>' : '');
+      item.addEventListener('click', (function(sid){ return function(){ selectedSiteId = sid; buildEventSiteList(); }; })(s.id));
+      list.appendChild(item);
+    });
+    container.appendChild(list);
+  }
+
+  function buildEventLinkList() {
+    var ll = document.getElementById('event-link-list');
+    ll.innerHTML = '';
+    var tables = lsLoad();
+    if (tables.length === 0) { document.getElementById('event-link-label').style.display = 'none'; return; }
+    document.getElementById('event-link-label').style.display = 'block';
+    var list = document.createElement('div'); list.className = 'modal-link-list';
+    tables.forEach(function(t) {
+      var item = document.createElement('div'); item.className = 'modal-link-item' + (selectedLinkId === t.id ? ' selected' : '');
+      item.innerHTML = '<div class="modal-link-item-icon">📋</div><div class="modal-link-item-name">'+(t.siteName||'（現場名なし）')+'</div>'+(selectedLinkId===t.id?'<div class="modal-link-check">✓</div>':'');
+      item.addEventListener('click', (function(tid){ return function(){ selectedLinkId = selectedLinkId===tid?null:tid; buildEventLinkList(); }; })(t.id));
+      list.appendChild(item);
+    });
+    ll.appendChild(list);
+  }
+
+  document.getElementById('cal-add-btn').addEventListener('click', function() {
+    calEditingEventId = null; selectedSiteId = null; selectedLinkId = null;
+    document.getElementById('event-name-input').value = '';
+    document.getElementById('event-start-date').value = calSelectedDate;
+    document.getElementById('event-start-time').value = '';
+    document.getElementById('event-end-date').value = calSelectedDate;
+    document.getElementById('event-end-time').value = '';
+    document.getElementById('modal-event-title').textContent = T[currentLang].calAddModalTitle;
+    document.getElementById('modal-event-save').textContent = '追加';
+    buildEventSiteList(); buildEventLinkList();
+    openModal('modal-event');
+    setTimeout(function(){ document.getElementById('event-name-input').focus(); }, 150);
+  });
+  document.getElementById('modal-event-cancel').addEventListener('click', function(){ closeModal('modal-event'); });
+  // Auto-adjust end date when start date changes
+  document.getElementById('event-start-date').addEventListener('change', function() {
+    var sd = this.value, ed = document.getElementById('event-end-date').value;
+    if (!ed || ed < sd) document.getElementById('event-end-date').value = sd;
+  });
+  document.getElementById('modal-event-save').addEventListener('click', function() {
+    var title = document.getElementById('event-name-input').value.trim();
+    if (!title) { document.getElementById('event-name-input').focus(); return; }
+    var startDate = document.getElementById('event-start-date').value || calSelectedDate;
+    var startTime = document.getElementById('event-start-time').value || '';
+    var endDate   = document.getElementById('event-end-date').value   || startDate;
+    var endTime   = document.getElementById('event-end-time').value   || '';
+    if (endDate < startDate) endDate = startDate;
+    var all = calLoad();
+    if (calEditingEventId) {
+      var idx = all.findIndex(function(e){ return e.id === calEditingEventId; });
+      if (idx >= 0) {
+        all[idx].title = title; all[idx].siteId = selectedSiteId; all[idx].linkedId = selectedLinkId || null;
+        all[idx].date = startDate; all[idx].startDate = startDate; all[idx].endDate = endDate;
+        all[idx].startTime = startTime; all[idx].endTime = endTime;
+      }
+    } else {
+      all.push({ id:'ev_'+Date.now(), date:startDate, startDate:startDate, endDate:endDate,
+                 startTime:startTime, endTime:endTime, title:title,
+                 siteId:selectedSiteId, linkedId:selectedLinkId||null });
+    }
+    calSave(all); closeModal('modal-event'); renderCalendar();
+  });
+  document.getElementById('event-name-input').addEventListener('keydown', function(e){ if(e.key==='Enter') document.getElementById('modal-event-save').click(); });
+
+  document.getElementById('cal-prev').addEventListener('click', function(){ calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderCalendar(); });
+  document.getElementById('cal-next').addEventListener('click', function(){ calMonth++; if(calMonth>11){calMonth=0;calYear++;} renderCalendar(); });
+  document.getElementById('cal-today-btn').addEventListener('click', function() {
+    var now = new Date(); calYear = now.getFullYear(); calMonth = now.getMonth();
+    calSelectedDate = dateKey(calYear, calMonth, now.getDate()); renderCalendar();
+  });
+
+  applyLang('ja');
+  updateUserDisplay();
+  renderList();
+})();
+</script>
+
+</body>
+</html>
