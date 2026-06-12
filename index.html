@@ -730,28 +730,57 @@ tr.dragging-row { opacity: 0.3; }
 
 /* ─── PRINT ─── */
 @media print {
-  @page { size: A4 portrait; margin: 5mm 6mm; }
-  html, body { height: 100%; margin: 0; padding: 0; background: #fff; overflow: visible; }
-  #screen-home, #screen-calendar, #tab-bar, .modal-overlay { display: none !important; }
-  #screen-edit {
-    display: block !important; position: static !important; transform: none !important;
-    max-width: 100%; width: 100%;
+  @page { size: A4 portrait; margin: 6mm; }
+  html, body {
+    height: auto !important; margin: 0 !important; padding: 0 !important;
+    background: #fff !important; overflow: visible !important;
   }
-  .files-section, #screen-fileview { display: none !important; }
-  .sheet { padding: 4px !important; }
-  .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 0 8px; }
-  .site-label { font-size: 10pt !important; }
-  #siteInput { font-size: 22pt !important; margin-bottom: 6px !important; }
-  th { font-size: 15pt !important; padding: 6px !important; }
-  td { font-size: 14pt !important; padding: 6px !important; }
-  .qty-td input.qty { font-size: 15pt !important; width: 52px !important; }
-  .qty-td .unit { font-size: 12pt !important; }
-  input.ni { font-size: 14pt !important; }
-  input.shaku { font-size: 14pt !important; width: 40px !important; }
-  input.custom-title { font-size: 15pt !important; }
-  table { margin-bottom: 6px !important; }
-  input { border: none !important; border-bottom: 0.5pt solid #999 !important; background: transparent !important; }
+  /* 非表示要素 */
+  #screen-home, #screen-calendar, #screen-files, #tab-bar,
+  .modal-overlay, .edit-topbar, .actions, #screen-fileview, .files-section {
+    display: none !important;
+  }
+  /* 編集画面をフラットに */
+  #screen-edit {
+    display: block !important; position: static !important;
+    transform: none !important; max-width: 100% !important;
+    width: 100% !important; background: #fff !important; overflow: visible !important;
+  }
+  /* シートの背景をリセット */
+  .sheet { background: #fff !important; padding: 0 !important; }
+  .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 0 6pt; }
+  /* テーブルを印刷向けにフラット化 */
+  table {
+    border-collapse: collapse !important; border-spacing: 0 !important;
+    border-radius: 0 !important; overflow: visible !important;
+    box-shadow: none !important; border: 0.5pt solid #bbb !important;
+    margin-bottom: 4pt !important;
+  }
+  th {
+    font-size: 10pt !important; padding: 4pt 5pt !important;
+    border: 0.5pt solid #bbb !important;
+    background: #f0f0f0 !important;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  td { font-size: 9pt !important; padding: 3pt 5pt !important; border: 0.5pt solid #ddd !important; }
+  tr:last-child td { border-bottom: 0.5pt solid #ddd !important; }
+  .site-label { font-size: 7pt !important; margin-bottom: 2pt !important; }
+  #siteInput {
+    font-size: 16pt !important; margin-bottom: 6pt !important;
+    border: none !important; border-bottom: 1pt solid #999 !important;
+    background: transparent !important;
+  }
+  .qty-td input.qty { font-size: 10pt !important; width: 36pt !important; color: #000 !important; }
+  .qty-td .unit { font-size: 8pt !important; }
+  input.ni { font-size: 9pt !important; }
+  input.shaku { font-size: 9pt !important; width: 24pt !important; }
+  input.custom-title { font-size: 10pt !important; }
+  /* インタラクティブ要素を非表示 */
+  .add-btn, .add-title-btn, .del-td, .section-del-btn,
   .row-drag-handle, .section-drag-handle { display: none !important; }
+  /* 入力フィールドをプレーンテキスト化 */
+  input { border: none !important; background: transparent !important; color: #000 !important; }
+  .section-wrap, .custom-section { margin-bottom: 3pt !important; }
 }
 </style>
 
@@ -2446,7 +2475,21 @@ tr.dragging-row { opacity: 0.3; }
   document.getElementById('btn-confirm').addEventListener('click', function(){ document.body.classList.add('confirmed'); applyLang(currentLang); });
   document.getElementById('btn-edit').addEventListener('click', function(){ document.body.classList.remove('confirmed'); applyLang(currentLang); });
   document.getElementById('btn-reset').addEventListener('click', function(){ if (!confirm(T[currentLang].resetConfirm)) return; buildDefaults(); applyLang(currentLang); });
-  document.getElementById('btn-print').addEventListener('click', function(){ window.print(); });
+  document.getElementById('btn-print').addEventListener('click', function() {
+    var sheet = document.getElementById('sheet');
+    // A4 usable height: 297mm - 12mm margins ≈ 285mm ≈ 1078px at 96dpi
+    var pageH = 1078;
+    var sh = sheet.scrollHeight;
+    if (sh > pageH) {
+      sheet.style.zoom = (pageH / sh);
+    }
+    function afterPrint() {
+      sheet.style.zoom = '';
+      window.removeEventListener('afterprint', afterPrint);
+    }
+    window.addEventListener('afterprint', afterPrint);
+    window.print();
+  });
 
   /* ── CALENDAR ── */
   function dateKey(y,m,d){ return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0'); }
