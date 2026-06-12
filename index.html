@@ -178,7 +178,7 @@ table {
 th, td { padding: 7px 8px; font-size: 12px; border: none; }
 th {
   background: transparent; color: #6C6C70;
-  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  font-size: 15px; font-weight: 600; text-transform: uppercase;
   letter-spacing: 0.5px; text-align: left;
   padding: 5px 8px 4px;
   border-bottom: 0.5px solid rgba(0,0,0,0.07);
@@ -204,7 +204,7 @@ input.ni { width: 100%; font-size: 12px; border: none; background: transparent; 
 input.ni::placeholder { color: #C7C7CC; }
 input.shaku { width: 30px; font-size: 12px; border: none; background: transparent; text-align: center; vertical-align: middle; font-family: inherit; outline: none; color: #000; }
 input.custom-title {
-  width: 100%; font-size: 10px; font-weight: 600; border: none;
+  width: 100%; font-size: 15px; font-weight: 600; border: none;
   background: transparent; outline: none; text-align: left;
   padding: 0; font-family: inherit; color: #6C6C70;
   letter-spacing: 0.5px; text-transform: uppercase;
@@ -1962,10 +1962,7 @@ tr.dragging-row { opacity: 0.3; }
     if (swAxis !== 'h') return;
     if (Math.abs(dx) < 55) return;
     if (document.querySelector('.modal-overlay.open')) return;
-    if (swEditActive) {
-      if (dx > 55 && swStartX < 40) document.getElementById('btn-back').click();
-      return;
-    }
+    if (swEditActive) return;
     if      (dx < -55 && currentTab === 'home')     switchTab('calendar');
     else if (dx < -55 && currentTab === 'calendar') switchTab('files');
     else if (dx >  55 && currentTab === 'files')    switchTab('calendar');
@@ -2312,6 +2309,15 @@ tr.dragging-row { opacity: 0.3; }
     counts = { kokan:0, kin:0, bata:0, sup:0, sangi:0, dogu:0 }; customCount = 0;
     document.querySelectorAll('.custom-section').forEach(function(el){ el.remove(); });
     ['kokan','kin','bata','sup','sangi','dogu'].forEach(function(t){ document.getElementById(t+'-body').innerHTML = ''; });
+    // Reset section positions to default layout
+    [['left',['kokan','kin','bata']],['right',['sup','sangi','dogu']]].forEach(function(pair) {
+      var col = document.getElementById('col-' + pair[0]);
+      var addBtn = document.getElementById('add-title-' + pair[0]);
+      pair[1].forEach(function(type) {
+        var wrap = document.querySelector('.section-wrap[data-section-type="' + type + '"]');
+        if (wrap) col.insertBefore(wrap, addBtn);
+      });
+    });
     document.getElementById('siteInput').value = '';
     document.body.classList.remove('confirmed');
     var kb = document.getElementById('kokan-body');
