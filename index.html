@@ -640,6 +640,39 @@ body.confirmed input.custom-title { border-bottom: none; }
 .folder-pick-item:active { background: #F2F2F7; }
 .folder-pick-icon { font-size: 22px; flex-shrink: 0; }
 
+/* ─── ROW & SECTION DRAG ─── */
+.row-drag-handle {
+  display: inline-block; cursor: grab; color: #C7C7CC;
+  font-size: 12px; margin-right: 2px; user-select: none;
+  -webkit-user-select: none; touch-action: none;
+  vertical-align: middle; line-height: 1;
+}
+body.confirmed .row-drag-handle { display: none !important; }
+.section-drag-handle {
+  display: inline-block; cursor: grab; color: #C7C7CC;
+  font-size: 12px; margin-right: 3px; user-select: none;
+  -webkit-user-select: none; touch-action: none; vertical-align: middle;
+}
+body.confirmed .section-drag-handle { display: none !important; }
+tr.dragging-row { opacity: 0.3; }
+.section-wrap { display: block; }
+.dragging-section { opacity: 0.3; }
+.section-drop-indicator { height: 2px; background: #007AFF; border-radius: 1px; margin: 0; }
+.row-drag-ghost {
+  position: fixed; z-index: 9000; pointer-events: none;
+  left: 8px; right: 8px;
+  background: #fff; border: 1px solid #c8d4e8; border-radius: 4px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.18); opacity: 0.92;
+  font-size: 11px; padding: 3px 6px; white-space: nowrap; overflow: hidden;
+}
+.section-drag-ghost {
+  position: fixed; z-index: 9000; pointer-events: none;
+  left: 8px; right: 8px;
+  background: #eef; border: 1px solid #99a; border-radius: 4px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.18); opacity: 0.92;
+  font-size: 12px; font-weight: bold; padding: 4px 8px; text-align: center;
+}
+
 /* ─── PRINT ─── */
 @media print {
   @page { size: A4 portrait; margin: 5mm 6mm; }
@@ -663,6 +696,7 @@ body.confirmed input.custom-title { border-bottom: none; }
   input.custom-title { font-size: 15pt !important; }
   table { margin-bottom: 6px !important; }
   input { border: none !important; border-bottom: 0.5pt solid #999 !important; background: transparent !important; }
+  .row-drag-handle, .section-drag-handle { display: none !important; }
 }
 </style>
 
@@ -1035,6 +1069,8 @@ body.confirmed input.custom-title { border-bottom: none; }
   var currentTab  = 'home';
   var counts = { kokan:0, kin:0, bata:0, sup:0, sangi:0, dogu:0 };
   var customCount = 0;
+  var rowDragState = null;
+  var secDragState = null;
 
   var calYear, calMonth, calSelectedDate;
   var calEditingEventId = null;
@@ -1941,24 +1977,25 @@ body.confirmed input.custom-title { border-bottom: none; }
   function makeRow(type, i, fixedName) {
     var tr = document.createElement('tr');
     var qKey, nHtml, unit;
+    var hdl = '<span class="row-drag-handle" title="ドラッグして並び替え">⠿</span>';
     if (type === 'kokan') {
       qKey='k'+i+'_q'; unit='本';
-      nHtml = fixedName !== undefined ? '<td class="name-td">'+fixedName+'</td>' : '<td class="name-td"><input class="ni" type="text" data-key="k'+i+'_n" placeholder="寸法"></td>';
+      nHtml = fixedName !== undefined ? '<td class="name-td">'+hdl+fixedName+'</td>' : '<td class="name-td">'+hdl+'<input class="ni" type="text" data-key="k'+i+'_n" placeholder="寸法"></td>';
     } else if (type === 'kin') {
       qKey='n'+i+'_q'; unit='袋';
-      nHtml='<td class="name-td"><input class="ni" type="text" data-key="n'+i+'_n" placeholder="名前"></td>';
+      nHtml='<td class="name-td">'+hdl+'<input class="ni" type="text" data-key="n'+i+'_n" placeholder="名前"></td>';
     } else if (type === 'bata') {
       qKey='b'+i+'_q'; unit='本';
-      nHtml='<td class="name-td"><input class="ni" type="text" data-key="b'+i+'_n" placeholder="名前"></td>';
+      nHtml='<td class="name-td">'+hdl+'<input class="ni" type="text" data-key="b'+i+'_n" placeholder="名前"></td>';
     } else if (type === 'sup') {
       qKey='s'+i+'_q'; unit='本';
-      nHtml='<td class="name-td"><input class="shaku" type="text" data-key="s'+i+'_s" placeholder="0">尺</td>';
+      nHtml='<td class="name-td">'+hdl+'<input class="shaku" type="text" data-key="s'+i+'_s" placeholder="0">尺</td>';
     } else if (type === 'sangi') {
       qKey='sg'+i+'_q'; unit='本';
-      nHtml='<td class="name-td"><input class="ni" type="text" data-key="sg'+i+'_n" placeholder="寸法"></td>';
+      nHtml='<td class="name-td">'+hdl+'<input class="ni" type="text" data-key="sg'+i+'_n" placeholder="寸法"></td>';
     } else {
       qKey='d'+i+'_q'; unit='';
-      nHtml='<td class="name-td"><input class="ni" type="text" data-key="d'+i+'_n" placeholder="道具名"></td>';
+      nHtml='<td class="name-td">'+hdl+'<input class="ni" type="text" data-key="d'+i+'_n" placeholder="道具名"></td>';
     }
     var unitSpan = unit ? '<span class="unit">'+unit+'</span>' : '';
     tr.innerHTML = nHtml + '<td class="qty-td"><input class="qty" type="number" min="0" data-key="'+qKey+'">' + unitSpan + '</td><td class="del-td"><button class="del">✕</button></td>';
@@ -1966,7 +2003,8 @@ body.confirmed input.custom-title { border-bottom: none; }
   }
   function makeCustomRow(ci, ri) {
     var tr = document.createElement('tr');
-    tr.innerHTML = '<td class="name-td"><input class="ni" type="text" data-key="cx'+ci+'_r'+ri+'_n" placeholder="名前"></td><td class="qty-td"><input class="qty" type="number" min="0" data-key="cx'+ci+'_r'+ri+'_q"></td><td class="del-td"><button class="del">✕</button></td>';
+    var hdl = '<span class="row-drag-handle" title="ドラッグして並び替え">⠿</span>';
+    tr.innerHTML = '<td class="name-td">'+hdl+'<input class="ni" type="text" data-key="cx'+ci+'_r'+ri+'_n" placeholder="名前"></td><td class="qty-td"><input class="qty" type="number" min="0" data-key="cx'+ci+'_r'+ri+'_q"></td><td class="del-td"><button class="del">✕</button></td>';
     return tr;
   }
   function makeCustomSection(colId, ci, titleVal) {
@@ -1975,9 +2013,10 @@ body.confirmed input.custom-title { border-bottom: none; }
     sdel.addEventListener('click', function() { if (!confirm(T[currentLang].sectionDeleteConfirm)) return; wrap.remove(); });
     var table = document.createElement('table'); table.className = 'custom-table';
     var thead = document.createElement('thead'); var thr = document.createElement('tr'); var th = document.createElement('th'); th.setAttribute('colspan','3');
+    var sHdl = document.createElement('span'); sHdl.className = 'section-drag-handle'; sHdl.title = 'ドラッグして並び替え'; sHdl.textContent = '⠿';
     var titleInput = document.createElement('input'); titleInput.className = 'custom-title'; titleInput.type = 'text'; titleInput.placeholder = T[currentLang].customTitlePlaceholder; titleInput.dataset.key = 'cx'+ci+'_title';
     if (titleVal) titleInput.value = titleVal;
-    th.appendChild(titleInput); thr.appendChild(th); thead.appendChild(thr);
+    th.appendChild(sHdl); th.appendChild(titleInput); thr.appendChild(th); thead.appendChild(thr);
     var tbody = document.createElement('tbody'); tbody.id = 'cx'+ci+'-body';
     table.appendChild(thead); table.appendChild(tbody);
     var addRow = document.createElement('button'); addRow.className = 'add-btn custom-add-btn'; addRow.textContent = '＋ ' + T[currentLang].addRowSuffix;
@@ -1987,6 +2026,210 @@ body.confirmed input.custom-title { border-bottom: none; }
     col.insertBefore(wrap, document.getElementById('add-title-' + (colId === 'col-left' ? 'left' : 'right')));
     return { tbody: tbody, ci: ci };
   }
+  function wrapBuiltinSections() {
+    [
+      { colId:'col-left',  type:'kokan', addId:'add-kokan' },
+      { colId:'col-left',  type:'kin',   addId:'add-kin'   },
+      { colId:'col-left',  type:'bata',  addId:'add-bata'  },
+      { colId:'col-right', type:'sup',   addId:'add-sup'   },
+      { colId:'col-right', type:'sangi', addId:'add-sangi' },
+      { colId:'col-right', type:'dogu',  addId:'add-dogu'  },
+    ].forEach(function(s) {
+      var table = document.getElementById(s.type + '-table');
+      var btn   = document.getElementById(s.addId);
+      if (!table || !btn || table.closest('.section-wrap')) return;
+      var wrap = document.createElement('div');
+      wrap.className = 'section-wrap';
+      wrap.dataset.sectionType = s.type;
+      table.parentNode.insertBefore(wrap, table);
+      wrap.appendChild(table);
+      wrap.appendChild(btn);
+      var th = table.querySelector('th');
+      if (th && !th.querySelector('.section-drag-handle')) {
+        var handle = document.createElement('span');
+        handle.className = 'section-drag-handle';
+        handle.title = 'ドラッグして並び替え';
+        handle.textContent = '⠿';
+        th.insertBefore(handle, th.firstChild);
+      }
+    });
+  }
+
+  // ─── DRAG & DROP helpers ───
+  function getClientXY(e) {
+    if (e.touches && e.touches[0]) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    if (e.changedTouches && e.changedTouches[0]) return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+    return { x: e.clientX, y: e.clientY };
+  }
+
+  function startRowDrag(e, handle) {
+    var tr = handle.closest('tr');
+    if (!tr) return;
+    var tbody = tr.closest('tbody');
+    if (!tbody) return;
+    var pos = getClientXY(e);
+    var nameEl = tr.querySelector('.ni, .shaku');
+    var nameText = nameEl ? nameEl.value : '';
+    if (!nameText) {
+      var nd = tr.querySelector('.name-td');
+      if (nd) { var cl = nd.cloneNode(true); var rh2 = cl.querySelector('.row-drag-handle'); if (rh2) rh2.remove(); nameText = cl.textContent.trim(); }
+    }
+    var ghost = document.createElement('div');
+    ghost.className = 'row-drag-ghost';
+    ghost.textContent = nameText || '行';
+    ghost.style.top = (pos.y - 16) + 'px';
+    document.body.appendChild(ghost);
+    tr.classList.add('dragging-row');
+    rowDragState = { tr: tr, tbody: tbody, ghostEl: ghost, insertionPoint: undefined };
+    if (e.preventDefault) e.preventDefault();
+  }
+
+  function startSectionDrag(e, handle) {
+    var section = handle.closest('.section-wrap, .custom-section');
+    if (!section) return;
+    var col = section.closest('.col-wrap');
+    if (!col) return;
+    var pos = getClientXY(e);
+    var titleEl = section.querySelector('input.custom-title');
+    var titleText = titleEl ? titleEl.value : '';
+    if (!titleText) {
+      var th = section.querySelector('th');
+      if (th) { var cl2 = th.cloneNode(true); var sh = cl2.querySelector('.section-drag-handle'); if (sh) sh.remove(); titleText = cl2.textContent.trim(); }
+    }
+    var ghost = document.createElement('div');
+    ghost.className = 'section-drag-ghost';
+    ghost.textContent = titleText || 'セクション';
+    ghost.style.top = (pos.y - 20) + 'px';
+    document.body.appendChild(ghost);
+    section.classList.add('dragging-section');
+    secDragState = { section: section, col: col, ghostEl: ghost, insertionPoint: undefined };
+    if (e.preventDefault) e.preventDefault();
+  }
+
+  function updateRowDrag(x, y) {
+    if (!rowDragState) return;
+    rowDragState.ghostEl.style.top = (y - 16) + 'px';
+    var old = rowDragState.tbody.querySelector('.row-drop-indicator');
+    if (old) old.remove();
+    rowDragState.insertionPoint = undefined;
+    rowDragState.tr.style.visibility = 'hidden';
+    var hit = document.elementFromPoint(x, y);
+    rowDragState.tr.style.visibility = '';
+    var targetTr = hit ? hit.closest('tr') : null;
+    if (targetTr && targetTr !== rowDragState.tr && targetTr.closest('tbody') === rowDragState.tbody && !targetTr.classList.contains('row-drop-indicator')) {
+      var rect = targetTr.getBoundingClientRect();
+      var ind = document.createElement('tr');
+      ind.className = 'row-drop-indicator';
+      var td = document.createElement('td'); td.setAttribute('colspan', '3');
+      td.style.cssText = 'height:2px;padding:0;border:none;background:#007AFF;';
+      ind.appendChild(td);
+      if (y < rect.top + rect.height / 2) {
+        rowDragState.tbody.insertBefore(ind, targetTr);
+        rowDragState.insertionPoint = targetTr;
+      } else {
+        var nxt = targetTr.nextSibling;
+        rowDragState.tbody.insertBefore(ind, nxt || null);
+        rowDragState.insertionPoint = nxt !== undefined ? nxt : null;
+      }
+    }
+  }
+
+  function updateSectionDrag(x, y) {
+    if (!secDragState) return;
+    secDragState.ghostEl.style.top = (y - 20) + 'px';
+    secDragState.col.querySelectorAll('.section-drop-indicator').forEach(function(el) { el.remove(); });
+    secDragState.insertionPoint = undefined;
+    secDragState.section.style.visibility = 'hidden';
+    var hit = document.elementFromPoint(x, y);
+    secDragState.section.style.visibility = '';
+    var targetSec = hit ? hit.closest('.section-wrap, .custom-section') : null;
+    if (targetSec && targetSec !== secDragState.section && targetSec.closest('.col-wrap') === secDragState.col) {
+      var rect = targetSec.getBoundingClientRect();
+      var ind = document.createElement('div');
+      ind.className = 'section-drop-indicator';
+      var addBtn = secDragState.col.querySelector('.add-title-btn');
+      if (y < rect.top + rect.height / 2) {
+        secDragState.col.insertBefore(ind, targetSec);
+        secDragState.insertionPoint = targetSec;
+      } else {
+        var nxt2 = targetSec.nextSibling;
+        while (nxt2 && nxt2.classList && nxt2.classList.contains('section-drop-indicator')) nxt2 = nxt2.nextSibling;
+        secDragState.col.insertBefore(ind, nxt2 || addBtn);
+        secDragState.insertionPoint = nxt2 || addBtn;
+      }
+    }
+  }
+
+  function finishRowDrag(cancel) {
+    if (!rowDragState) return;
+    var old = rowDragState.tbody.querySelector('.row-drop-indicator');
+    if (old) old.remove();
+    if (!cancel && rowDragState.insertionPoint !== undefined) {
+      rowDragState.tbody.insertBefore(rowDragState.tr, rowDragState.insertionPoint);
+    }
+    rowDragState.tr.classList.remove('dragging-row');
+    if (rowDragState.ghostEl.parentNode) rowDragState.ghostEl.parentNode.removeChild(rowDragState.ghostEl);
+    rowDragState = null;
+  }
+
+  function finishSectionDrag(cancel) {
+    if (!secDragState) return;
+    secDragState.col.querySelectorAll('.section-drop-indicator').forEach(function(el) { el.remove(); });
+    if (!cancel && secDragState.insertionPoint !== undefined) {
+      var addBtn = secDragState.col.querySelector('.add-title-btn');
+      secDragState.col.insertBefore(secDragState.section, secDragState.insertionPoint || addBtn);
+    }
+    secDragState.section.classList.remove('dragging-section');
+    if (secDragState.ghostEl.parentNode) secDragState.ghostEl.parentNode.removeChild(secDragState.ghostEl);
+    secDragState = null;
+  }
+
+  document.addEventListener('touchstart', function(e) {
+    if (document.body.classList.contains('confirmed')) return;
+    var rh = e.target.closest && e.target.closest('.row-drag-handle');
+    if (rh) { startRowDrag(e, rh); return; }
+    var sh = e.target.closest && e.target.closest('.section-drag-handle');
+    if (sh) { startSectionDrag(e, sh); }
+  }, { passive: false });
+
+  document.addEventListener('touchmove', function(e) {
+    if (!rowDragState && !secDragState) return;
+    var pos = getClientXY(e);
+    if (rowDragState) updateRowDrag(pos.x, pos.y);
+    if (secDragState) updateSectionDrag(pos.x, pos.y);
+    e.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener('touchend', function() {
+    if (rowDragState) finishRowDrag(false);
+    if (secDragState) finishSectionDrag(false);
+  });
+
+  document.addEventListener('touchcancel', function() {
+    if (rowDragState) finishRowDrag(true);
+    if (secDragState) finishSectionDrag(true);
+  });
+
+  document.addEventListener('mousedown', function(e) {
+    if (document.body.classList.contains('confirmed')) return;
+    var rh = e.target.closest && e.target.closest('.row-drag-handle');
+    if (rh) { startRowDrag(e, rh); e.preventDefault(); return; }
+    var sh = e.target.closest && e.target.closest('.section-drag-handle');
+    if (sh) { startSectionDrag(e, sh); e.preventDefault(); }
+  });
+
+  document.addEventListener('mousemove', function(e) {
+    if (!rowDragState && !secDragState) return;
+    var pos = getClientXY(e);
+    if (rowDragState) updateRowDrag(pos.x, pos.y);
+    if (secDragState) updateSectionDrag(pos.x, pos.y);
+  });
+
+  document.addEventListener('mouseup', function() {
+    if (rowDragState) finishRowDrag(false);
+    if (secDragState) finishSectionDrag(false);
+  });
+
   function checkVis(type) {
     var has = document.getElementById(type+'-body').querySelectorAll('tr').length > 0;
     document.getElementById(type+'-table').style.display = has ? '' : 'none';
@@ -2014,17 +2257,31 @@ body.confirmed input.custom-title { border-bottom: none; }
   }
 
   function captureData() {
-    var data = { site: document.getElementById('siteInput').value, rows: {}, custom: [] };
+    var data = { site: document.getElementById('siteInput').value, rows: {}, custom: [], sectionOrder: { left: [], right: [] } };
     ['kokan','kin','bata','sup','sangi','dogu'].forEach(function(type){
       var rows = [];
       document.getElementById(type+'-body').querySelectorAll('tr').forEach(function(tr){
         var cells = {};
         tr.querySelectorAll('[data-key]').forEach(function(el){ cells[el.dataset.key] = el.value; });
         var nd = tr.querySelector('.name-td');
-        if (nd && !nd.querySelector('input')) cells['_fixed'] = nd.textContent.trim();
+        if (nd && !nd.querySelector('input')) {
+          var cl = nd.cloneNode(true);
+          var rh = cl.querySelector('.row-drag-handle'); if (rh) rh.remove();
+          cells['_fixed'] = cl.textContent.trim();
+        }
         rows.push(cells);
       });
       data.rows[type] = rows;
+    });
+    ['left', 'right'].forEach(function(side) {
+      var col = document.getElementById('col-' + side);
+      col.querySelectorAll('.section-wrap, .custom-section').forEach(function(el) {
+        if (el.classList.contains('custom-section')) {
+          data.sectionOrder[side].push('cx' + el.dataset.ci);
+        } else {
+          data.sectionOrder[side].push(el.dataset.sectionType || '');
+        }
+      });
     });
     document.querySelectorAll('.custom-section').forEach(function(sec) {
       var ci = sec.dataset.ci; var colId = sec.closest('.col-wrap').id;
@@ -2067,6 +2324,25 @@ body.confirmed input.custom-title { border-bottom: none; }
           var tr = makeCustomRow(ci, ri); result.tbody.appendChild(tr);
           Object.keys(cells).forEach(function(key){ var el = tr.querySelector('[data-key="'+key+'"]'); if (el) el.value = cells[key]; });
         });
+      });
+    }
+    if (data.sectionOrder) {
+      ['left', 'right'].forEach(function(side) {
+        var col = document.getElementById('col-' + side);
+        var addBtn = document.getElementById('add-title-' + side);
+        var order = data.sectionOrder[side] || [];
+        var frag = document.createDocumentFragment();
+        order.forEach(function(id) {
+          if (!id) return;
+          var el;
+          if (id.indexOf('cx') === 0) {
+            el = document.querySelector('.custom-section[data-ci="' + id.substring(2) + '"]');
+          } else {
+            el = col.querySelector('.section-wrap[data-section-type="' + id + '"]');
+          }
+          if (el) frag.appendChild(el);
+        });
+        col.insertBefore(frag, addBtn);
       });
     }
   }
@@ -2119,7 +2395,7 @@ body.confirmed input.custom-title { border-bottom: none; }
     grid.innerHTML = '';
     var now = new Date();
     var todayKey = dateKey(now.getFullYear(), now.getMonth(), now.getDate());
-    var allEvents = calLoad().map(normalizeEvent);
+    var allEvs = calLoad().map(normalizeEvent);
 
     var monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
     document.getElementById('cal-month-label').innerHTML = calYear+'年<span>'+monthNames[calMonth]+'</span>';
@@ -2130,7 +2406,12 @@ body.confirmed input.custom-title { border-bottom: none; }
     var totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
     var totalRows  = totalCells / 7;
 
-    // ── Build cells ──
+    // First visible cell's date in ms
+    var tmp = new Date(calYear, calMonth, 1 - firstDay);
+    var fcMs = new Date(dateKey(tmp.getFullYear(), tmp.getMonth(), tmp.getDate()) + 'T00:00:00').getTime();
+
+    // ── Build cells (day numbers only — events rendered as overlay bars) ──
+    var cellMap = {};
     for (var i = 0; i < totalCells; i++) {
       var cell = document.createElement('div'); cell.className = 'cal-cell';
       var day, year = calYear, month = calMonth, isOther = false;
@@ -2139,10 +2420,8 @@ body.confirmed input.custom-title { border-bottom: none; }
       else { day = i - firstDay + 1; }
       var dk = dateKey(year, month, day);
       var dow = i % 7;
-      // Explicit placement — prevents auto-placement being displaced by span-bar siblings
       cell.style.gridColumn = String(dow + 1);
       cell.style.gridRow    = String(Math.floor(i / 7) + 1);
-      // Borders in JS (nth-child unreliable with explicit+auto mixed children)
       if (dow === 6)            cell.style.borderRight  = 'none';
       if (i >= totalCells - 7) cell.style.borderBottom = 'none';
       if (isOther) cell.classList.add('other-month');
@@ -2150,105 +2429,91 @@ body.confirmed input.custom-title { border-bottom: none; }
       if (dow === 6) cell.classList.add('sat');
       if (dk === todayKey)        cell.classList.add('today');
       if (dk === calSelectedDate) cell.classList.add('selected');
-
       var dayNum = document.createElement('div'); dayNum.className = 'cal-day-num'; dayNum.textContent = day;
       cell.appendChild(dayNum);
-
-      // Single-day events only inside cells
-      var singleEvs = allEvents.filter(function(ev){ return ev.startDate === ev.endDate && ev.startDate === dk; });
-      singleEvs.slice(0, 2).forEach(function(ev) {
-        var bar = document.createElement('div'); bar.className = 'cal-ev-bar';
-        bar.style.background = getEventColor(ev);
-        var txt = ev.title || '';
-        bar.textContent = txt.length > 7 ? txt.slice(0,7) : txt;
-        cell.appendChild(bar);
-      });
-      if (singleEvs.length > 2) {
-        var more = document.createElement('div'); more.className = 'cal-ev-more';
-        more.textContent = '+' + (singleEvs.length - 2);
-        cell.appendChild(more);
-      }
-
       (function(dk2){ cell.addEventListener('click', function(){ selectDate(dk2); }); })(dk);
+      cellMap[dk] = cell;
       grid.appendChild(cell);
     }
 
-    // ── Multi-day overlay bars as CSS Grid spanning children ──
-    var multiEvs = allEvents.filter(function(ev){ return ev.startDate !== ev.endDate; });
-    multiEvs.sort(function(a,b){ return a.startDate < b.startDate ? -1 : a.startDate > b.startDate ? 1 : 0; });
+    // ── Unified slot assignment for ALL events (single-day and multi-day) ──
+    // Sort: longer events first, then by start date (ensures long events get low slots)
+    var sorted = allEvs.slice().sort(function(a, b) {
+      var aLen = Math.round((new Date(a.endDate+'T00:00:00') - new Date(a.startDate+'T00:00:00')) / 86400000);
+      var bLen = Math.round((new Date(b.endDate+'T00:00:00') - new Date(b.startDate+'T00:00:00')) / 86400000);
+      if (aLen !== bLen) return bLen - aLen;
+      return a.startDate < b.startDate ? -1 : 1;
+    });
 
-    if (multiEvs.length > 0) {
-      // First visible cell's date in ms
-      var tmp = new Date(calYear, calMonth, 1 - firstDay);
-      var fcMs = new Date(dateKey(tmp.getFullYear(), tmp.getMonth(), tmp.getDate()) + 'T00:00:00').getTime();
+    var MAX_SLOTS = 3;
+    var rowSlots = [];
+    for (var ri = 0; ri < totalRows; ri++) rowSlots.push([null, null, null]);
+    var cellOverflow = {};
 
-      // Per-row slot occupancy: rowSlots[rowIdx][slotIdx] = eventId or null
-      var MAX_SLOTS = 3;
-      var rowSlots = [];
-      for (var ri = 0; ri < totalRows; ri++) { rowSlots.push([null, null, null]); }
+    sorted.forEach(function(ev) {
+      var sMs = new Date(ev.startDate+'T00:00:00').getTime();
+      var eMs = new Date(ev.endDate+'T00:00:00').getTime();
+      var sc  = Math.round((sMs - fcMs) / 86400000);
+      var ec  = Math.round((eMs - fcMs) / 86400000);
+      var vs  = Math.max(0, sc);
+      var ve  = Math.min(totalCells - 1, ec);
+      if (vs > ve) return;
 
-      // Assign each multi-day event a slot per row it occupies
-      // Map: evId -> slot (same slot used across all rows for visual consistency)
-      var evSlotMap = {};
-      multiEvs.forEach(function(ev) {
-        var sMs = new Date(ev.startDate + 'T00:00:00').getTime();
-        var eMs = new Date(ev.endDate   + 'T00:00:00').getTime();
-        var sc  = Math.round((sMs - fcMs) / 86400000);
-        var ec  = Math.round((eMs - fcMs) / 86400000);
-        var vs  = Math.max(0, sc);
-        var ve  = Math.min(totalCells - 1, ec);
-        if (vs > ve) return;
+      var firstRow = Math.floor(vs / 7);
+      var lastRow  = Math.floor(ve / 7);
 
-        // Find a slot free in ALL rows this event spans
-        var firstRow = Math.floor(vs / 7);
-        var lastRow  = Math.floor(ve / 7);
-        var slot = -1;
-        for (var s = 0; s < MAX_SLOTS; s++) {
-          var free = true;
-          for (var r = firstRow; r <= lastRow; r++) {
-            if (rowSlots[r][s] !== null) { free = false; break; }
-          }
-          if (free) { slot = s; break; }
+      // Find a free slot in every row this event spans
+      var slot = -1;
+      for (var s = 0; s < MAX_SLOTS; s++) {
+        var free = true;
+        for (var r = firstRow; r <= lastRow; r++) {
+          if (rowSlots[r][s] !== null) { free = false; break; }
         }
-        if (slot === -1) slot = MAX_SLOTS - 1; // fallback: reuse last slot
+        if (free) { slot = s; break; }
+      }
 
-        // Mark slots occupied
-        for (var r2 = firstRow; r2 <= lastRow; r2++) rowSlots[r2][slot] = ev.id;
-        evSlotMap[ev.id] = slot;
+      if (slot === -1) {
+        // Mark overflow for affected cells
+        for (var ci = vs; ci <= ve; ci++) cellOverflow[ci] = (cellOverflow[ci] || 0) + 1;
+        return;
+      }
 
-        var color = getEventColor(ev);
+      for (var r2 = firstRow; r2 <= lastRow; r2++) rowSlots[r2][slot] = ev.id;
 
-        // Render one bar per week-row
-        for (var ri2 = firstRow; ri2 <= lastRow; ri2++) {
-          var ss = Math.max(vs, ri2 * 7);
-          var se = Math.min(ve, ri2 * 7 + 6);
+      var color = getEventColor(ev);
 
-          var bar = document.createElement('div');
-          bar.className = 'cal-span-bar';
-          bar.style.gridColumn = (ss % 7 + 1) + ' / ' + (se % 7 + 2);
-          bar.style.gridRow    = String(ri2 + 1);
-          bar.style.background = color;
-          bar.style.marginTop  = (29 + slot * 14) + 'px';
-
-          var isS = (ss === vs);
-          var isE = (se === ve);
-          bar.style.borderRadius = (isS ? '4px' : '0') + ' ' +
-                                   (isE ? '4px' : '0') + ' ' +
-                                   (isE ? '4px' : '0') + ' ' +
-                                   (isS ? '4px' : '0');
-          bar.style.marginLeft  = isS ? '2px' : '0';
-          bar.style.marginRight = isE ? '2px' : '0';
-
-          // Show title at visual start of each row segment
-          if (isS || ss % 7 === 0) {
-            var txt = ev.title || '';
-            bar.textContent = txt.length > 8 ? txt.slice(0, 8) : txt;
-          }
-
-          grid.appendChild(bar);
+      for (var ri2 = firstRow; ri2 <= lastRow; ri2++) {
+        var ss = Math.max(vs, ri2 * 7);
+        var se = Math.min(ve, ri2 * 7 + 6);
+        var bar = document.createElement('div');
+        bar.className = 'cal-span-bar';
+        bar.style.gridColumn = (ss % 7 + 1) + ' / ' + (se % 7 + 2);
+        bar.style.gridRow    = String(ri2 + 1);
+        bar.style.background = color;
+        bar.style.marginTop  = (29 + slot * 14) + 'px';
+        var isS = (ss === vs);
+        var isE = (se === ve);
+        bar.style.borderRadius = (isS?'4px':'0')+' '+(isE?'4px':'0')+' '+(isE?'4px':'0')+' '+(isS?'4px':'0');
+        bar.style.marginLeft  = isS ? '2px' : '0';
+        bar.style.marginRight = isE ? '2px' : '0';
+        if (isS || ss % 7 === 0) {
+          var txt = ev.title || '';
+          bar.textContent = txt.length > 8 ? txt.slice(0, 8) : txt;
         }
-      });
-    }
+        grid.appendChild(bar);
+      }
+    });
+
+    // Add overflow indicators inside cells
+    Object.keys(cellOverflow).forEach(function(ci) {
+      var d = new Date(fcMs + parseInt(ci, 10) * 86400000);
+      var dk2 = dateKey(d.getFullYear(), d.getMonth(), d.getDate());
+      var c = cellMap[dk2];
+      if (!c) return;
+      var more = document.createElement('div'); more.className = 'cal-ev-more';
+      more.textContent = '+' + cellOverflow[ci];
+      c.appendChild(more);
+    });
 
     renderSiteLegend();
     renderEvents();
@@ -2429,6 +2694,7 @@ body.confirmed input.custom-title { border-bottom: none; }
     calSelectedDate = dateKey(calYear, calMonth, now.getDate()); renderCalendar();
   });
 
+  wrapBuiltinSections();
   applyLang('ja');
   updateUserDisplay();
   renderList();
