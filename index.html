@@ -147,39 +147,90 @@ html, body {
 
 /* ─── EDIT SCREEN ─── */
 .edit-topbar {
-  background: rgba(249,249,249,0.94);
-  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  background: rgba(249,249,249,0.96);
+  backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 0.5px solid rgba(0,0,0,0.15);
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0 16px; height: 50px;
+  padding: 0 16px; height: 52px;
   position: sticky; top: 0; z-index: 10;
 }
-.back-btn { background: none; border: none; color: #007AFF; font-size: 15px; cursor: pointer; padding: 8px 0; font-family: inherit; -webkit-tap-highlight-color: transparent; }
-.edit-title { font-size: 15px; font-weight: 600; color: #000; }
-.sheet { background: #fff; padding: 14px; }
-.site-label { font-size: 10px; color: #888; }
-#siteInput { width: 100%; font-size: 20px; font-weight: bold; border: none; border-bottom: 2px solid #333; outline: none; margin-bottom: 12px; padding: 2px 4px; font-family: inherit; }
-#siteInput::placeholder { color: #ccc; }
+.back-btn { background: none; border: none; color: #007AFF; font-size: 15px; cursor: pointer; padding: 10px 0; font-family: inherit; -webkit-tap-highlight-color: transparent; }
+.edit-title { font-size: 15px; font-weight: 600; color: #000; letter-spacing: -0.2px; }
+.sheet { background: #F2F2F7; padding: 14px 14px 24px; }
+.site-label { font-size: 11px; color: #6C6C70; font-weight: 500; letter-spacing: 0.3px; text-transform: uppercase; margin-bottom: 5px; }
+#siteInput {
+  width: 100%; font-size: 22px; font-weight: 700; border: none;
+  background: transparent; outline: none; margin-bottom: 18px;
+  padding: 2px 0; font-family: inherit; color: #000;
+  border-bottom: 1.5px solid rgba(0,122,255,0.6);
+}
+#siteInput::placeholder { color: #C7C7CC; font-weight: 400; }
 .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; }
 .col-wrap { display: flex; flex-direction: column; }
 
-table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
-th, td { border: 1px solid #ccc; padding: 2px 4px; font-size: 11px; }
-th { background: #eee; text-align: center; font-size: 12px; }
-input.custom-title { width: 100%; font-size: 12px; font-weight: bold; border: none; background: transparent; outline: none; text-align: center; padding: 0; font-family: inherit; }
-input.custom-title::placeholder { color: #aaa; font-weight: normal; }
-.name-td { width: auto; }
-.qty-td { text-align: right; white-space: nowrap; width: 1%; padding-right: 4px; }
-.qty-td input.qty { width: 34px; font-size: 13px; font-weight: bold; text-align: center; border: 1px solid #ccc; padding: 1px 2px; vertical-align: middle; font-family: inherit; }
-.qty-td .unit { font-size: 10px; color: #555; margin-left: 2px; vertical-align: middle; }
-.del-td { width: 18px; text-align: center; padding: 0 2px; border-left: none; }
-.del { background: none; border: none; color: #bbb; font-size: 11px; cursor: pointer; padding: 0; }
+/* ── Tables → iOS grouped card style ── */
+table {
+  width: 100%; border-collapse: separate; border-spacing: 0;
+  background: #fff; border-radius: 12px; overflow: hidden;
+  margin-bottom: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 0 0 0.5px rgba(0,0,0,0.04);
+}
+th, td { padding: 7px 8px; font-size: 12px; border: none; }
+th {
+  background: transparent; color: #6C6C70;
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.5px; text-align: left;
+  padding: 5px 8px 4px;
+  border-bottom: 0.5px solid rgba(0,0,0,0.07);
+}
+td { border-bottom: 0.5px solid rgba(0,0,0,0.07); font-size: 12px; }
+tr:last-child td { border-bottom: none; }
+.name-td { padding: 7px 4px 7px 8px; }
+.qty-td {
+  text-align: right; white-space: nowrap; width: 1%;
+  padding: 6px 8px 6px 4px;
+  border-left: 0.5px solid rgba(0,0,0,0.06);
+}
+.qty-td input.qty {
+  width: 38px; font-size: 13px; font-weight: 700; text-align: right;
+  border: none; background: transparent; padding: 0;
+  vertical-align: middle; font-family: inherit; color: #007AFF; outline: none;
+}
+.qty-td .unit { font-size: 9px; color: #8E8E93; margin-left: 1px; vertical-align: middle; }
+.del-td { width: 26px; text-align: center; padding: 0; border-left: 0.5px solid rgba(0,0,0,0.06); }
+.del { background: none; border: none; color: #C7C7CC; font-size: 13px; cursor: pointer; padding: 5px 7px; line-height: 1; }
 .del:active { color: #FF3B30; }
-input.ni { width: 100%; font-size: 11px; border: 1px solid #ccc; padding: 1px 3px; font-family: inherit; }
-input.shaku { width: 28px; font-size: 12px; border: 1px solid #ccc; padding: 1px 2px; text-align: center; vertical-align: middle; font-family: inherit; }
-.add-btn { width: 100%; padding: 3px; font-size: 11px; cursor: pointer; background: #f9f9f9; border: 1px dashed #aaa; margin-bottom: 8px; color: #666; font-family: inherit; }
-.add-title-btn { width: 100%; padding: 5px; font-size: 11px; cursor: pointer; background: #f0f4ff; border: 1px dashed #88a; margin-top: 4px; color: #446; border-radius: 3px; margin-bottom: 4px; font-family: inherit; }
-.section-del-btn { display: block; width: 100%; padding: 2px; font-size: 10px; cursor: pointer; background: none; border: none; color: #ccc; text-align: right; margin-bottom: 2px; font-family: inherit; }
+input.ni { width: 100%; font-size: 12px; border: none; background: transparent; outline: none; font-family: inherit; color: #000; }
+input.ni::placeholder { color: #C7C7CC; }
+input.shaku { width: 30px; font-size: 12px; border: none; background: transparent; text-align: center; vertical-align: middle; font-family: inherit; outline: none; color: #000; }
+input.custom-title {
+  width: 100%; font-size: 10px; font-weight: 600; border: none;
+  background: transparent; outline: none; text-align: left;
+  padding: 0; font-family: inherit; color: #6C6C70;
+  letter-spacing: 0.5px; text-transform: uppercase;
+}
+input.custom-title::placeholder { color: #C7C7CC; font-weight: 400; text-transform: none; letter-spacing: 0; }
+.add-btn {
+  width: 100%; padding: 8px; font-size: 12px; cursor: pointer;
+  background: #fff; border: none; margin-bottom: 10px;
+  color: #007AFF; font-family: inherit; font-weight: 500; text-align: center;
+  border-radius: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.06), 0 0 0 0.5px rgba(0,0,0,0.04);
+  -webkit-tap-highlight-color: transparent;
+}
+.add-btn:active { background: #F2F2F7; }
+.add-title-btn {
+  width: 100%; padding: 8px; font-size: 11px; cursor: pointer;
+  background: rgba(0,122,255,0.09); border: none;
+  margin-top: 2px; color: #007AFF; border-radius: 10px;
+  margin-bottom: 8px; font-family: inherit; font-weight: 500;
+  -webkit-tap-highlight-color: transparent;
+}
+.add-title-btn:active { background: rgba(0,122,255,0.16); }
+.section-del-btn {
+  display: block; width: 100%; padding: 2px 4px; font-size: 10px;
+  cursor: pointer; background: none; border: none;
+  color: #C7C7CC; text-align: right; margin-bottom: 1px; font-family: inherit;
+}
 .section-del-btn:active { color: #FF3B30; }
 
 /* ─── FILE ATTACHMENTS ─── */
@@ -655,22 +706,26 @@ body.confirmed .row-drag-handle { display: none !important; }
 }
 body.confirmed .section-drag-handle { display: none !important; }
 tr.dragging-row { opacity: 0.3; }
-.section-wrap { display: block; }
+.section-wrap { display: block; margin-bottom: 10px; }
+.custom-section { margin-bottom: 10px; }
 .dragging-section { opacity: 0.3; }
-.section-drop-indicator { height: 2px; background: #007AFF; border-radius: 1px; margin: 0; }
+.section-drop-indicator { height: 2px; background: #007AFF; border-radius: 1px; margin: 2px 0; }
 .row-drag-ghost {
   position: fixed; z-index: 9000; pointer-events: none;
-  left: 8px; right: 8px;
-  background: #fff; border: 1px solid #c8d4e8; border-radius: 4px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.18); opacity: 0.92;
-  font-size: 11px; padding: 3px 6px; white-space: nowrap; overflow: hidden;
+  left: 12px; right: 12px;
+  background: rgba(255,255,255,0.95); border-radius: 10px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.18); opacity: 0.95;
+  font-size: 12px; font-weight: 500; padding: 8px 12px;
+  white-space: nowrap; overflow: hidden; color: #000;
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
 }
 .section-drag-ghost {
   position: fixed; z-index: 9000; pointer-events: none;
-  left: 8px; right: 8px;
-  background: #eef; border: 1px solid #99a; border-radius: 4px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.18); opacity: 0.92;
-  font-size: 12px; font-weight: bold; padding: 4px 8px; text-align: center;
+  left: 12px; right: 12px;
+  background: rgba(255,255,255,0.95); border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.22); opacity: 0.96;
+  font-size: 12px; font-weight: 600; padding: 10px 14px; text-align: center;
+  color: #007AFF; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
 }
 
 /* ─── PRINT ─── */
@@ -2102,7 +2157,7 @@ tr.dragging-row { opacity: 0.3; }
     ghost.style.top = (pos.y - 20) + 'px';
     document.body.appendChild(ghost);
     section.classList.add('dragging-section');
-    secDragState = { section: section, col: col, ghostEl: ghost, insertionPoint: undefined };
+    secDragState = { section: section, col: col, dropCol: col, ghostEl: ghost, insertionPoint: undefined };
     if (e.preventDefault) e.preventDefault();
   }
 
@@ -2137,26 +2192,41 @@ tr.dragging-row { opacity: 0.3; }
   function updateSectionDrag(x, y) {
     if (!secDragState) return;
     secDragState.ghostEl.style.top = (y - 20) + 'px';
-    secDragState.col.querySelectorAll('.section-drop-indicator').forEach(function(el) { el.remove(); });
+    document.querySelectorAll('.section-drop-indicator').forEach(function(el) { el.remove(); });
     secDragState.insertionPoint = undefined;
+    secDragState.dropCol = secDragState.col;
     secDragState.section.style.visibility = 'hidden';
     var hit = document.elementFromPoint(x, y);
     secDragState.section.style.visibility = '';
     var targetSec = hit ? hit.closest('.section-wrap, .custom-section') : null;
-    if (targetSec && targetSec !== secDragState.section && targetSec.closest('.col-wrap') === secDragState.col) {
-      var rect = targetSec.getBoundingClientRect();
-      var ind = document.createElement('div');
-      ind.className = 'section-drop-indicator';
-      var addBtn = secDragState.col.querySelector('.add-title-btn');
-      if (y < rect.top + rect.height / 2) {
-        secDragState.col.insertBefore(ind, targetSec);
-        secDragState.insertionPoint = targetSec;
-      } else {
-        var nxt2 = targetSec.nextSibling;
-        while (nxt2 && nxt2.classList && nxt2.classList.contains('section-drop-indicator')) nxt2 = nxt2.nextSibling;
-        secDragState.col.insertBefore(ind, nxt2 || addBtn);
-        secDragState.insertionPoint = nxt2 || addBtn;
+    // Also detect hovering over a col-wrap directly (empty column area)
+    var targetCol = hit ? hit.closest('.col-wrap') : null;
+    if (targetSec && targetSec !== secDragState.section) {
+      var secCol = targetSec.closest('.col-wrap');
+      if (secCol) {
+        secDragState.dropCol = secCol;
+        var rect = targetSec.getBoundingClientRect();
+        var ind = document.createElement('div');
+        ind.className = 'section-drop-indicator';
+        var addBtn = secCol.querySelector('.add-title-btn');
+        if (y < rect.top + rect.height / 2) {
+          secCol.insertBefore(ind, targetSec);
+          secDragState.insertionPoint = targetSec;
+        } else {
+          var nxt2 = targetSec.nextSibling;
+          while (nxt2 && nxt2.classList && nxt2.classList.contains('section-drop-indicator')) nxt2 = nxt2.nextSibling;
+          secCol.insertBefore(ind, nxt2 || addBtn);
+          secDragState.insertionPoint = nxt2 || addBtn;
+        }
       }
+    } else if (!targetSec && targetCol && targetCol !== secDragState.col) {
+      // Dropped onto an empty area of the other column — append before its add-title-btn
+      secDragState.dropCol = targetCol;
+      var addBtn2 = targetCol.querySelector('.add-title-btn');
+      var ind2 = document.createElement('div');
+      ind2.className = 'section-drop-indicator';
+      targetCol.insertBefore(ind2, addBtn2);
+      secDragState.insertionPoint = addBtn2;
     }
   }
 
@@ -2174,10 +2244,11 @@ tr.dragging-row { opacity: 0.3; }
 
   function finishSectionDrag(cancel) {
     if (!secDragState) return;
-    secDragState.col.querySelectorAll('.section-drop-indicator').forEach(function(el) { el.remove(); });
+    document.querySelectorAll('.section-drop-indicator').forEach(function(el) { el.remove(); });
     if (!cancel && secDragState.insertionPoint !== undefined) {
-      var addBtn = secDragState.col.querySelector('.add-title-btn');
-      secDragState.col.insertBefore(secDragState.section, secDragState.insertionPoint || addBtn);
+      var dropCol = secDragState.dropCol || secDragState.col;
+      var addBtn = dropCol.querySelector('.add-title-btn');
+      dropCol.insertBefore(secDragState.section, secDragState.insertionPoint || addBtn);
     }
     secDragState.section.classList.remove('dragging-section');
     if (secDragState.ghostEl.parentNode) secDragState.ghostEl.parentNode.removeChild(secDragState.ghostEl);
@@ -2338,7 +2409,7 @@ tr.dragging-row { opacity: 0.3; }
           if (id.indexOf('cx') === 0) {
             el = document.querySelector('.custom-section[data-ci="' + id.substring(2) + '"]');
           } else {
-            el = col.querySelector('.section-wrap[data-section-type="' + id + '"]');
+            el = document.querySelector('.section-wrap[data-section-type="' + id + '"]');
           }
           if (el) frag.appendChild(el);
         });
@@ -2349,8 +2420,11 @@ tr.dragging-row { opacity: 0.3; }
 
   document.body.addEventListener('click', function(e){
     var btn = e.target.closest('.del'); if (!btn) return;
-    if (!confirm(T[currentLang].rowDeleteConfirm)) return;
-    var tr = btn.closest('tr'); var tbody = tr.closest('tbody');
+    var tr = btn.closest('tr');
+    var qtyInput = tr ? tr.querySelector('.qty') : null;
+    var hasQty = qtyInput && qtyInput.value.trim() !== '';
+    if (hasQty && !confirm(T[currentLang].rowDeleteConfirm)) return;
+    var tbody = tr.closest('tbody');
     var typeMatch = tbody.id.replace('-body',''); tr.remove();
     if (['kokan','kin','bata','sup','sangi','dogu'].indexOf(typeMatch) >= 0) checkVis(typeMatch);
   });
