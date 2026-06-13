@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#1C2B3A"/>
+      <stop offset="100%" stop-color="#0A1520"/>
+    </linearGradient>
+    <linearGradient id="steel" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#E8EDF2"/>
+      <stop offset="100%" stop-color="#B0BEC5"/>
+    </linearGradient>
+    <linearGradient id="wood" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#D4956A"/>
+      <stop offset="100%" stop-color="#A8693E"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1024" height="1024" rx="220" ry="220" fill="url(#bg)"/>
+
+  <!-- Subtle grid lines (table background reference) -->
+  <line x1="0" y1="640" x2="1024" y2="640" stroke="rgba(255,255,255,0.04)" stroke-width="1.5"/>
+  <line x1="0" y1="710" x2="1024" y2="710" stroke="rgba(255,255,255,0.04)" stroke-width="1.5"/>
+  <line x1="0" y1="780" x2="1024" y2="780" stroke="rgba(255,255,255,0.04)" stroke-width="1.5"/>
+  <line x1="0" y1="850" x2="1024" y2="850" stroke="rgba(255,255,255,0.04)" stroke-width="1.5"/>
+
+  <!-- Table rows (faint, right side) -->
+  <rect x="580" y="615" width="290" height="44" rx="6" fill="rgba(255,255,255,0.04)"/>
+  <rect x="580" y="667" width="290" height="44" rx="6" fill="rgba(255,255,255,0.04)"/>
+  <rect x="580" y="719" width="290" height="44" rx="6" fill="rgba(255,255,255,0.04)"/>
+  <rect x="580" y="771" width="290" height="44" rx="6" fill="rgba(255,255,255,0.04)"/>
+
+  <!-- Row content lines -->
+  <rect x="596" y="629" width="148" height="14" rx="7" fill="rgba(255,255,255,0.25)"/>
+  <rect x="810" y="629" width="44" height="14" rx="7" fill="rgba(0,122,255,0.5)"/>
+  <rect x="596" y="681" width="124" height="14" rx="7" fill="rgba(255,255,255,0.25)"/>
+  <rect x="810" y="681" width="44" height="14" rx="7" fill="rgba(0,122,255,0.5)"/>
+  <rect x="596" y="733" width="138" height="14" rx="7" fill="rgba(255,255,255,0.25)"/>
+  <rect x="810" y="733" width="44" height="14" rx="7" fill="rgba(0,122,255,0.5)"/>
+  <rect x="596" y="785" width="112" height="14" rx="7" fill="rgba(255,255,255,0.25)"/>
+  <rect x="810" y="785" width="44" height="14" rx="7" fill="rgba(0,122,255,0.5)"/>
+
+  <!-- ─── Hammer (diagonal, -30 degrees, center-left) ─── -->
+  <g transform="rotate(-30, 420, 480)">
+    <!-- Handle (wooden) -->
+    <rect x="395" y="390" width="50" height="320" rx="18" fill="url(#wood)"/>
+    <!-- Handle grip wrap -->
+    <rect x="395" y="620" width="50" height="14" rx="4" fill="rgba(0,0,0,0.18)"/>
+    <rect x="395" y="644" width="50" height="14" rx="4" fill="rgba(0,0,0,0.18)"/>
+    <rect x="395" y="668" width="50" height="14" rx="4" fill="rgba(0,0,0,0.18)"/>
+
+    <!-- Head (steel) -->
+    <rect x="300" y="268" width="240" height="136" rx="18" fill="url(#steel)"/>
+    <!-- Head face highlight -->
+    <rect x="300" y="268" width="240" height="42" rx="18" fill="rgba(255,255,255,0.25)"/>
+    <!-- Head-handle connection notch -->
+    <rect x="388" y="390" width="64" height="18" rx="5" fill="rgba(0,0,0,0.2)"/>
+    <!-- Steel face edge -->
+    <rect x="300" y="358" width="44" height="46" rx="8" fill="#90A4AE"/>
+    <!-- Wedge line (handle wedge) -->
+    <line x1="420" y1="268" x2="420" y2="404" stroke="rgba(0,0,0,0.15)" stroke-width="5"/>
+  </g>
+
+  <!-- Subtle glow behind hammer head -->
+  <ellipse cx="370" cy="360" rx="180" ry="100" fill="rgba(100,160,255,0.07)" transform="rotate(-30, 370, 360)"/>
+</svg>
