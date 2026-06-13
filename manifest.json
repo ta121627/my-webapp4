@@ -1,0 +1,23 @@
+{
+  "name": "材料準備表",
+  "short_name": "材料表",
+  "description": "建設現場向け材料準備表・カレンダー管理アプリ",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1C2B3A",
+  "theme_color": "#1C2B3A",
+  "icons": [
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-hammer.png",
+      "sizes": "1024x1024",
+      "type": "image/png"
+    }
+  ]
+}
