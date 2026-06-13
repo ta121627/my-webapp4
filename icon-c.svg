@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#FF6B2B"/>
+      <stop offset="100%" stop-color="#C93A00"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.22)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0.08)"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1024" height="1024" rx="220" ry="220" fill="url(#bg)"/>
+
+  <!-- Top highlight -->
+  <ellipse cx="512" cy="160" rx="420" ry="130" fill="rgba(255,255,255,0.08)"/>
+
+  <!-- Left table card -->
+  <rect x="130" y="248" width="336" height="528" rx="24" fill="url(#card)"/>
+
+  <!-- Left header -->
+  <rect x="130" y="248" width="336" height="66" rx="24" fill="rgba(255,255,255,0.2)"/>
+  <rect x="130" y="290" width="336" height="24" fill="rgba(255,255,255,0.2)"/>
+  <rect x="162" y="266" width="128" height="14" rx="7" fill="rgba(255,255,255,0.8)"/>
+
+  <!-- Left rows -->
+  <line x1="130" y1="352" x2="466" y2="352" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+  <rect x="154" y="322" width="152" height="14" rx="7" fill="rgba(255,255,255,0.85)"/>
+  <rect x="404" y="322" width="52" height="14" rx="7" fill="rgba(255,255,255,0.6)"/>
+
+  <line x1="130" y1="398" x2="466" y2="398" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+  <rect x="154" y="368" width="132" height="14" rx="7" fill="rgba(255,255,255,0.85)"/>
+  <rect x="404" y="368" width="52" height="14" rx="7" fill="rgba(255,255,255,0.6)"/>
+
+  <line x1="130" y1="444" x2="466" y2="444" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+  <rect x="154" y="414" width="142" height="14" rx="7" fill="rgba(255,255,255,0.85)"/>
+  <rect x="404" y="414" width="52" height="14" rx="7" fill="rgba(255,255,255,0.6)"/>
+
+  <line x1="130" y1="490" x2="466" y2="490" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+  <rect x="154" y="460" width="118" height="14" rx="7" fill="rgba(255,255,255,0.85)"/>
+  <rect x="404" y="460" width="52" height="14" rx="7" fill="rgba(255,255,255,0.6)"/>
+
+  <line x1="130" y1="536" x2="466" y2="536" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+  <rect x="154" y="506" width="136" height="14" rx="7" fill="rgba(255,255,255,0.85)"/>
+  <rect x="404" y="506" width="52" height="14" rx="7" fill="rgba(255,255,255,0.6)"/>
+
+  <line x1="130" y1="582" x2="466" y2="582" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+  <rect x="154" y="552" width="148" height="14" rx="7" fill="rgba(255,255,255,0.85)"/>
+  <rect x="404" y="552" width="52" height="14" rx="7" fill="rgba(255,255,255,0.6)"/>
+
+  <line x1="130" y1="628" x2="466" y2="628" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+  <rect x="154" y="598" width="124" height="14" rx="7" fill="rgba(255,255,255,0.85)"/>
+  <rect x="404" y="598" width="52" height="14" rx="7" fill="rgba(255,255,255,0.6)"/>
+
+  <rect x="154" y="646" width="138" height="14" rx="7" fill="rgba(255,255,255,0.85)"/>
+  <rect x="404" y="646" width="52" height="14" rx="7" fill="rgba(255,255,255,0.6)"/>
+
+  <!-- Right table card -->
+  <rect x="482" y="248" width="336" height="528" rx="24" fill="url(#card)"/>
+
+  <!-- Right header -->
+  <rect x="482" y="248" width="336" height="66" rx="24" fill="rgba(255,255,255,0.2)"/>
+  <rect x="482" y="290" width="336" height="24" fill="rgba(255,255,255,0.2)"/>
+  <rect x="514" y="266" width="128" height="14" rx="7" fill="rgba(255,255,255,0.8)"/>
+
+  <!-- Right rows -->
+  <line x1="482" y1="352" x2="818" y2="352" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+  <rect x="506" y="322" width="152" height="14" rx="7" fill="rgba(255,255,255,0.85)"/>
+  <rect x="756" y="322" width="52" height="14" rx="7" fill="rgba(255,255,255,0.6)"/>
+
+  <line x1="482" y1="398" x2="818" y2="398" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+  <rect x="506" y="368" width="132" height="14" rx="7" fill="rgba(255,255,255,0.85)"/>
+  <rect x="756" y="368" width="52" height="14" rx="7" fill="rgba(255,255,255,0.6)"/>
+
+  <line x1="482" y1="444" x2="818" y2="444" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+  <rect x="506" y="414" width="142" height="14" rx="7" fill="rgba(255,255,255,0.85)"/>
+  <rect x="756" y="414" width="52" height="14" rx="7" fill="rgba(255,255,255,0.6)"/>
+
+  <line x1="482" y1="490" x2="818" y2="490" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+  <rect x="506" y="460" width="118" height="14" rx="7" fill="rgba(255,255,255,0.85)"/>
+  <rect x="756" y="460" width="52" height="14" rx="7" fill="rgba(255,255,255,0.6)"/>
+
+  <line x1="482" y1="536" x2="818" y2="536" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+  <rect x="506" y="506" width="136" height="14" rx="7" fill="rgba(255,255,255,0.85)"/>
+  <rect x="756" y="506" width="52" height="14" rx="7" fill="rgba(255,255,255,0.6)"/>
+
+  <rect x="506" y="552" width="148" height="14" rx="7" fill="rgba(255,255,255,0.85)"/>
+  <rect x="756" y="552" width="52" height="14" rx="7" fill="rgba(255,255,255,0.6)"/>
+</svg>

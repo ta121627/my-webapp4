@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="40%" y2="100%">
+      <stop offset="0%" stop-color="#1C1C2E"/>
+      <stop offset="100%" stop-color="#0A0A1A"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#007AFF"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1024" height="1024" rx="220" ry="220" fill="url(#bg)"/>
+
+  <!-- Subtle grid lines (background texture) -->
+  <line x1="0" y1="341" x2="1024" y2="341" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+  <line x1="0" y1="512" x2="1024" y2="512" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+  <line x1="0" y1="683" x2="1024" y2="683" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+  <line x1="341" y1="0" x2="341" y2="1024" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+  <line x1="512" y1="0" x2="512" y2="1024" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+  <line x1="683" y1="0" x2="683" y2="1024" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+
+  <!-- Table frame -->
+  <rect x="160" y="250" width="704" height="524" rx="16" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="3"/>
+
+  <!-- Header row background -->
+  <rect x="160" y="250" width="704" height="72" rx="16" fill="url(#accent)" opacity="0.15"/>
+  <rect x="160" y="298" width="704" height="24" fill="url(#accent)" opacity="0.15"/>
+
+  <!-- Header accent line (top border of header) -->
+  <rect x="160" y="250" width="704" height="4" rx="2" fill="url(#accent)"/>
+
+  <!-- Column divider (accent colored) -->
+  <line x1="564" y1="250" x2="564" y2="774" stroke="rgba(56,189,248,0.2)" stroke-width="2"/>
+
+  <!-- Header text placeholders -->
+  <rect x="196" y="268" width="148" height="14" rx="7" fill="url(#accent)" opacity="0.8"/>
+  <rect x="596" y="268" width="100" height="14" rx="7" fill="url(#accent)" opacity="0.8"/>
+
+  <!-- Horizontal row dividers -->
+  <line x1="160" y1="392" x2="864" y2="392" stroke="rgba(255,255,255,0.07)" stroke-width="1.5"/>
+  <line x1="160" y1="458" x2="864" y2="458" stroke="rgba(255,255,255,0.07)" stroke-width="1.5"/>
+  <line x1="160" y1="524" x2="864" y2="524" stroke="rgba(255,255,255,0.07)" stroke-width="1.5"/>
+  <line x1="160" y1="590" x2="864" y2="590" stroke="rgba(255,255,255,0.07)" stroke-width="1.5"/>
+  <line x1="160" y1="656" x2="864" y2="656" stroke="rgba(255,255,255,0.07)" stroke-width="1.5"/>
+  <line x1="160" y1="722" x2="864" y2="722" stroke="rgba(255,255,255,0.07)" stroke-width="1.5"/>
+
+  <!-- Row data: left col (name) -->
+  <rect x="196" y="358" width="200" height="14" rx="7" fill="rgba(255,255,255,0.75)"/>
+  <rect x="196" y="424" width="172" height="14" rx="7" fill="rgba(255,255,255,0.75)"/>
+  <rect x="196" y="490" width="190" height="14" rx="7" fill="rgba(255,255,255,0.75)"/>
+  <rect x="196" y="556" width="160" height="14" rx="7" fill="rgba(255,255,255,0.75)"/>
+  <rect x="196" y="622" width="182" height="14" rx="7" fill="rgba(255,255,255,0.75)"/>
+  <rect x="196" y="688" width="166" height="14" rx="7" fill="rgba(255,255,255,0.75)"/>
+  <rect x="196" y="740" width="178" height="14" rx="7" fill="rgba(255,255,255,0.45)"/>
+
+  <!-- Row data: right col (qty) - accent blue -->
+  <rect x="600" y="358" width="88" height="14" rx="7" fill="url(#accent)" opacity="0.7"/>
+  <rect x="600" y="424" width="88" height="14" rx="7" fill="url(#accent)" opacity="0.7"/>
+  <rect x="600" y="490" width="88" height="14" rx="7" fill="url(#accent)" opacity="0.7"/>
+  <rect x="600" y="556" width="88" height="14" rx="7" fill="url(#accent)" opacity="0.7"/>
+  <rect x="600" y="622" width="88" height="14" rx="7" fill="url(#accent)" opacity="0.7"/>
+  <rect x="600" y="688" width="88" height="14" rx="7" fill="url(#accent)" opacity="0.7"/>
+  <rect x="600" y="740" width="88" height="14" rx="7" fill="url(#accent)" opacity="0.3"/>
+</svg>
