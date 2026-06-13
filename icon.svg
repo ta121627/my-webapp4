@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="60%" y2="100%">
+      <stop offset="0%" stop-color="#1A6FFF"/>
+      <stop offset="100%" stop-color="#0040CC"/>
+    </linearGradient>
+    <clipPath id="round">
+      <rect width="1024" height="1024" rx="220" ry="220"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1024" height="1024" rx="220" ry="220" fill="url(#bg)"/>
+
+  <!-- Subtle inner highlight -->
+  <ellipse cx="440" cy="180" rx="380" ry="160" fill="rgba(255,255,255,0.07)"/>
+
+  <!-- Table card (left column) -->
+  <rect x="148" y="260" width="310" height="504" rx="28" fill="rgba(255,255,255,0.15)"/>
+
+  <!-- Table card (right column) -->
+  <rect x="482" y="260" width="310" height="504" rx="28" fill="rgba(255,255,255,0.15)"/>
+
+  <!-- Left column: header row -->
+  <rect x="148" y="260" width="310" height="68" rx="28" fill="rgba(255,255,255,0.25)"/>
+  <rect x="148" y="300" width="310" height="28" fill="rgba(255,255,255,0.25)"/>
+
+  <!-- Left column: data rows -->
+  <rect x="166" y="366" width="154" height="18" rx="9" fill="rgba(255,255,255,0.7)"/>
+  <rect x="334" y="366" width="106" height="18" rx="9" fill="rgba(255,255,255,0.5)"/>
+
+  <rect x="166" y="412" width="130" height="18" rx="9" fill="rgba(255,255,255,0.7)"/>
+  <rect x="334" y="412" width="106" height="18" rx="9" fill="rgba(255,255,255,0.5)"/>
+
+  <rect x="166" y="458" width="144" height="18" rx="9" fill="rgba(255,255,255,0.7)"/>
+  <rect x="334" y="458" width="106" height="18" rx="9" fill="rgba(255,255,255,0.5)"/>
+
+  <rect x="166" y="504" width="118" height="18" rx="9" fill="rgba(255,255,255,0.7)"/>
+  <rect x="334" y="504" width="106" height="18" rx="9" fill="rgba(255,255,255,0.5)"/>
+
+  <rect x="166" y="550" width="138" height="18" rx="9" fill="rgba(255,255,255,0.7)"/>
+  <rect x="334" y="550" width="106" height="18" rx="9" fill="rgba(255,255,255,0.5)"/>
+
+  <rect x="166" y="596" width="124" height="18" rx="9" fill="rgba(255,255,255,0.7)"/>
+  <rect x="334" y="596" width="106" height="18" rx="9" fill="rgba(255,255,255,0.5)"/>
+
+  <rect x="166" y="642" width="148" height="18" rx="9" fill="rgba(255,255,255,0.7)"/>
+  <rect x="334" y="642" width="106" height="18" rx="9" fill="rgba(255,255,255,0.5)"/>
+
+  <!-- Separator line between name/qty in left col -->
+  <line x1="326" y1="350" x2="326" y2="764" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+
+  <!-- Right column: header row -->
+  <rect x="482" y="260" width="310" height="68" rx="28" fill="rgba(255,255,255,0.25)"/>
+  <rect x="482" y="300" width="310" height="28" fill="rgba(255,255,255,0.25)"/>
+
+  <!-- Right column: data rows -->
+  <rect x="500" y="366" width="154" height="18" rx="9" fill="rgba(255,255,255,0.7)"/>
+  <rect x="668" y="366" width="106" height="18" rx="9" fill="rgba(255,255,255,0.5)"/>
+
+  <rect x="500" y="412" width="130" height="18" rx="9" fill="rgba(255,255,255,0.7)"/>
+  <rect x="668" y="412" width="106" height="18" rx="9" fill="rgba(255,255,255,0.5)"/>
+
+  <rect x="500" y="458" width="144" height="18" rx="9" fill="rgba(255,255,255,0.7)"/>
+  <rect x="668" y="458" width="106" height="18" rx="9" fill="rgba(255,255,255,0.5)"/>
+
+  <rect x="500" y="504" width="118" height="18" rx="9" fill="rgba(255,255,255,0.7)"/>
+  <rect x="668" y="504" width="106" height="18" rx="9" fill="rgba(255,255,255,0.5)"/>
+
+  <rect x="500" y="550" width="138" height="18" rx="9" fill="rgba(255,255,255,0.7)"/>
+  <rect x="668" y="550" width="106" height="18" rx="9" fill="rgba(255,255,255,0.5)"/>
+
+  <!-- Separator line between name/qty in right col -->
+  <line x1="660" y1="350" x2="660" y2="764" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+
+  <!-- Divider between columns (subtle) -->
+  <line x1="470" y1="280" x2="470" y2="744" stroke="rgba(255,255,255,0.08)" stroke-width="3"/>
+</svg>
